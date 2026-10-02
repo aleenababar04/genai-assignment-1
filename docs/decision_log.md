@@ -139,27 +139,63 @@ Copy this block for each new decision.
 - **Choice and why:** All four conditions per validation image, for a balanced and less noisy validation objective at negligible cost.
 - **Report section it feeds:** Dataset preparation; Optuna search design (validation objective).
 
+### Task 1: architecture and bottleneck
+
+- **Date:** 2026-10-03
+- **Decision:** A convolutional autoencoder with four stride-2 stages (128 -> 64 -> 32 -> 16 -> 8, channels c, 2c, 4c, 8c), a spatial bottleneck of 8 x 8 x `latent_channels`, and a decoder of four "nearest-neighbour upsample + convolution" stages ending in a sigmoid. No skip connections in the main model. `latent_channels` is the bottleneck dimension tuned by Optuna.
+- **Question:** What form should the "genuine compressed latent representation" take, and how should the decoder upsample?
+- **Alternatives considered:**
+  - Flatten to one latent vector through a linear layer: the strongest compression, but it discards spatial layout and adds a large linear layer.
+  - Spatial bottleneck (8 x 8 x C): still compressed (48x, 24x, 12x and 6x fewer values than the 49,152 input values for C = 16, 32, 64, 128) and keeps layout.
+  - Transposed convolutions in the decoder: learnable upsampling, but prone to checkerboard artefacts.
+  - Upsample then convolve: avoids those artefacts and exports cleanly to ONNX.
+  - Full U-Net skips: best pixel accuracy, but the brief rules out unrestricted skip connections because the input can then be copied past the bottleneck.
+- **Sources consulted:** Assignment brief, Task 1 (bottleneck and skip-connection requirements). To read first-hand and cite before the report: Odena et al., "Deconvolution and Checkerboard Artifacts" (Distill, 2016), for the upsample-plus-convolution choice; Vincent et al., "Extracting and Composing Robust Features with Denoising Autoencoders" (ICML 2008), for the denoising-autoencoder idea.
+- **Experiment and numbers:** Parameter counts (no skip): 1,865,891 for (c = 32, latent 32); 4,132,835 for (48, 32); 7,289,123 for (64, 32); 7,780,739 for (64, 128). `tests/test_autoencoder.py`: 17 passed, including "decode(encode(x)) equals forward(x)", which shows the output depends on the input only through the bottleneck. Trained results: TODO after the Kaggle run.
+- **Choice and why:** Spatial bottleneck with upsample-plus-convolution and no skips. It satisfies the bottleneck rule without any argument, and the compression ratio is an explicit, tunable number.
+- **Report section it feeds:** Task 1 methodology, architecture.
+
+### Task 1: limited skip connection as an ablation only
+
+- **Date:** 2026-10-03
+- **Decision:** The model has an optional single skip connection at the 16 x 16 level (`skip=True`), off by default. It is trained once with the best configuration as an ablation and compared with the main model.
+- **Question:** Should limited skip connections be used, given that the brief allows them only if their purpose and effect are investigated?
+- **Alternatives considered:**
+  - No skip at all: nothing to justify, but no evidence about what a skip would change.
+  - One skip at 16 x 16 (4c channels): low resolution, so it cannot copy fine detail, but it does let information bypass the 8 x 8 bottleneck.
+  - Skips at high resolution (64 x 64 or 128 x 128): would let the network copy the input, which the brief forbids.
+- **Sources consulted:** Assignment brief, Task 1: "If limited skip connections are used, their purpose and effect must be investigated and justified in the report."
+- **Experiment and numbers:** TODO after the Kaggle run: test PSNR/SSIM per condition for `task1_udae` against `task1_udae_skip`. The skip model has 1,939,619 parameters at (c = 32, latent 32).
+- **Choice and why:** Main model without skips; the skip variant is reported as an ablation so its effect is measured, not assumed.
+- **Report section it feeds:** Task 1 results, ablation.
+
+### Task 1: Optuna search design and validation objective
+
+- **Date:** 2026-10-03
+- **Decision:** TPE sampler (seed 42) with a median pruner (5 start-up trials, 3 warm-up epochs), 30 trials of 10 epochs. Search space: learning rate 1e-4 to 3e-3 (log), batch size {32, 64, 128}, bottleneck channels {16, 32, 64, 128}, base channels {32, 48, 64}, dropout 0 to 0.3, alpha 0.5 to 0.95. Every trial is scored on the validation manifest with the fixed objective `0.8 * L1 + 0.2 * (1 - SSIM)`.
+- **Question:** How can trials that train with different loss weights be compared fairly?
+- **Alternatives considered:**
+  - Use each trial's own training loss on the validation set: not comparable, because alpha changes the scale of the loss, so Optuna would simply favour whichever alpha makes the number small.
+  - A fixed objective with the brief's starting weights (0.8 / 0.2): the same yardstick for every trial; combines reconstruction quality and structural similarity as the brief requires. A trial with alpha near 0.8 trains on almost what is measured, which may favour it slightly.
+  - Multi-objective search (L1 and SSIM separately): no weighting needed, but returns a Pareto front instead of one best trial, which the brief asks for.
+- **Sources consulted:** Assignment brief, Task 1: the study must cover learning rate, batch size, bottleneck dimension, encoder channels, dropout and alpha, and "the validation objective should combine reconstruction quality and structural similarity". To read first-hand and cite: Akiba et al., "Optuna: A Next-generation Hyperparameter Optimization Framework" (KDD 2019), and the Optuna documentation on `TPESampler` and `MedianPruner`.
+- **Experiment and numbers:** TODO after the Kaggle run: number of completed and pruned trials, best trial, best configuration. PSNR, SSIM and L1 are stored with every trial as user attributes.
+- **Choice and why:** Fixed 0.8 / 0.2 objective with TPE and median pruning. One comparable number per trial, with the plain metrics kept alongside so the choice can be re-examined.
+- **Report section it feeds:** Task 1 methodology, Optuna search design.
+
 ## Upcoming decisions
 
 Empty headings for decisions that still have to be made. Fill each one in with the template above when the decision is taken.
 
 ### Task 1: Universal denoising autoencoder
 
-#### Bottleneck design
-
-TODO:
-
-#### Skip connections (whether to use them, and where)
-
-TODO:
-
 #### SSIM implementation and window size
 
-TODO:
+Currently `pytorch-msssim` with its defaults (11 x 11 Gaussian window, sigma 1.5, data range 1.0), used for both the loss and the metric. TODO: record why this implementation and window were kept, after reading Wang et al., "Image Quality Assessment: From Error Visibility to Structural Similarity" (IEEE TIP, 2004).
 
 #### Loss weight alpha between L1 and (1 - SSIM)
 
-TODO:
+TODO: fill in from the Optuna result (best alpha and how the objective varies with it).
 
 ### Task 2: Classifier and hard-routed specialists
 

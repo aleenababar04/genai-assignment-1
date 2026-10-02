@@ -1,0 +1,40 @@
+# Task 1: universal multi-corruption denoising autoencoder.
+# Shared settings (seed, paths, num_workers) come from configs/base.yaml.
+
+study_name: task1_udae        # Optuna study -> optuna_studies/task1_udae.db
+wandb_group: task1-udae       # W&B group for all runs of this task
+checkpoint_name: task1_udae   # checkpoints/task1_udae.pt
+
+# Every trial is scored on the validation manifest with this fixed weighting,
+#   objective = objective_alpha * L1 + (1 - objective_alpha) * (1 - SSIM)
+# It does not change with the trial's own alpha, so trials stay comparable.
+objective_alpha: 0.8
+
+optuna:
+  n_trials: 30
+  epochs_per_trial: 10
+  pruner_startup_trials: 5    # trials that always run to the end before pruning starts
+  pruner_warmup_epochs: 3     # epochs every trial gets before it can be pruned
+
+final:
+  epochs: 80
+  sample_every: 5             # log a grid of restored validation images every N epochs
+  num_samples: 8
+
+# Ranges searched by Optuna.
+search_space:
+  lr: [0.0001, 0.003]                    # log-uniform
+  batch_size: [32, 64, 128]
+  latent_channels: [16, 32, 64, 128]     # bottleneck is 8 x 8 x latent_channels
+  base_channels: [32, 48, 64]            # encoder channels are c, 2c, 4c, 8c
+  dropout: [0.0, 0.3]
+  alpha: [0.5, 0.95]                     # weight of L1 against (1 - SSIM)
+
+# Used when no Optuna result exists yet (the brief's suggested starting alpha).
+defaults:
+  lr: 0.001
+  batch_size: 64
+  latent_channels: 32
+  base_channels: 32
+  dropout: 0.0
+  alpha: 0.8
