@@ -5,7 +5,8 @@ image_size: 128     # all images are resized to 128x128
 
 # Datasets
 data:
-  pet_dir: data/oxford-iiit-pet   # Oxford-IIIT Pet
+  pet_dir: data/oxford-iiit-pet   # Oxford-IIIT Pet (raw download)
+  pet_cache_dir: data/pet_128     # clean images resized to 128x128, one .npy per split
   fs2k_dir: data/FS2K             # FS2K face/sketch pairs
   manifests_dir: manifests        # split files and corruption manifests (committed; data/ is git-ignored)
 
