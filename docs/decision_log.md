@@ -39,10 +39,13 @@ Copy this block for each new decision.
 - **Alternatives considered:**
   - Weights & Biases: hosted service; runs are uploaded as training proceeds and stay available online after the Kaggle session ends. Needs an account and an API key stored as a Kaggle secret.
   - MLflow with the local file store: no account needed, but the run data is written to the session's disk on Kaggle and would have to be downloaded and carried back manually after every session.
-- **Sources consulted:** TODO: list the documentation pages or other material actually read for this comparison.
-- **Experiment and numbers:** TODO: none run yet. If a comparison is made (for example, logging the same short run to both), record it here; otherwise write "none" and explain.
+- **Sources consulted:**
+  - Assignment brief (Instructions, third bullet): experiments "must be recorded using either MLflow or Weights & Biases", so both options are allowed.
+  - The comparison itself came from the Claude Code session on 2026-10-02 (see `docs/ai_use_log.md`), not from first-hand reading.
+  - Not yet read first-hand; read and cite before writing the report: W&B documentation (https://docs.wandb.ai/) and MLflow tracking documentation (https://mlflow.org/docs/latest/).
+- **Experiment and numbers:** None. The choice follows from the workflow constraint (training on Kaggle, sessions wiped at the end), not from a measurement, so no comparison run was made.
 - **Choice and why:** Weights & Biases. Training runs on Kaggle, and W&B keeps the runs in the cloud, where they survive the end of the session and can be shown directly in the demo video. MLflow's local file store would have to be carried back from Kaggle by hand.
-- **Report section it feeds:** TODO: experimental setup / experiment tracking subsection.
+- **Report section it feeds:** Experimental setup, experiment-tracking subsection.
 
 ### Training location: Kaggle GPU, CPU-only PyTorch locally
 
@@ -53,10 +56,30 @@ Copy this block for each new decision.
   - Train locally: the laptop has only Intel Iris Xe integrated graphics, so there is no CUDA GPU and training would run on CPU.
   - Kaggle GPU notebooks: free GPU sessions; needs the code to be cloned into the notebook and outputs to be saved before the session ends.
   - Google Colab: similar to Kaggle; kept as the backup if Kaggle is unavailable or the quota runs out.
-- **Sources consulted:** TODO: list anything actually read (for example Kaggle or Colab documentation on GPU quotas and session limits).
-- **Experiment and numbers:** TODO: none run yet. If epoch time is measured on CPU and on the Kaggle GPU, record both here.
+- **Sources consulted:**
+  - Hardware check run on the laptop on 2026-10-02: Windows reports one video adapter, "Intel(R) Iris(R) Xe Graphics"; `nvidia-smi` is not installed; 15.75 GB RAM; about 25 GB free on C:.
+  - Not yet read first-hand; read and cite before writing the report: Kaggle notebooks documentation (https://www.kaggle.com/docs/notebooks) for the current GPU quota and session limits.
+- **Experiment and numbers:** No timing experiment yet. The installed build is `torch 2.14.1+cpu`. To add once Task 1 trains: seconds per epoch on the laptop CPU and on the Kaggle GPU for the same config.
 - **Choice and why:** Kaggle GPU, with Colab as the backup. The laptop has only Intel Iris Xe graphics, so GPU training is not possible locally. CPU-only PyTorch is enough locally for writing code, running tests and serving the exported models.
-- **Report section it feeds:** TODO: experimental setup / hardware and environment subsection.
+- **Report section it feeds:** Experimental setup, hardware and environment subsection.
+
+### Local environment: SQLAlchemy installed without compiled extensions
+
+- **Date:** 2026-10-02
+- **Decision:** On the Windows laptop, install SQLAlchemy (the library Optuna uses for SQLite study storage) as pure Python, without its compiled extension files.
+- **Question:** How can Optuna's SQLite storage run locally when Windows Smart App Control blocks some compiled files in the virtual environment?
+- **Alternatives considered:**
+  - Turn Smart App Control off: fixes every package, but lowers the machine's protection and may not be reversible without resetting Windows.
+  - Run all Python in a Docker dev container: avoids the Windows policy, but needs Docker Desktop running for every test.
+  - Do all Python work on Kaggle: no local change, but slow for small tests.
+  - Reinstall SQLAlchemy without compiled extensions: nothing is left for the policy to block; slightly slower, which does not matter for Optuna's bookkeeping.
+- **Sources consulted:** The error message itself ("DLL load failed while importing _processors_cy: An Application Control policy has blocked this file") and `Get-MpComputerStatus`, which reported `SmartAppControlState: On`. The reinstall approach came from the Claude Code session (see `docs/ai_use_log.md`).
+- **Experiment and numbers:**
+  - Before: `onnx`, `scikit-learn` and SQLAlchemy 2.1.2 failed to import; `pytest` gave 3 passed, 1 failed (`test_create_study_is_reloadable`).
+  - After adding the `.venv` folder to the Windows Security exclusions: `onnx` 1.23.1 and `scikit-learn` 1.9.1 imported; SQLAlchemy was still blocked. Smart App Control still reported `On`, so it is not certain the exclusion was the cause.
+  - After reinstalling SQLAlchemy with `DISABLE_SQLALCHEMY_CEXT=1` and `--no-binary sqlalchemy`: no `.pyd` files left in the package; `pytest` gave 4 passed.
+- **Choice and why:** Pure-Python SQLAlchemy. It removed the blocked files without changing a security setting, and the tests confirm Optuna studies can be created and reloaded. The commands are recorded at the top of `requirements.txt`. This affects only the laptop; Kaggle and the Docker containers run Linux.
+- **Report section it feeds:** Limitations / implementation difficulties.
 
 ## Upcoming decisions
 
