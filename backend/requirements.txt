@@ -1,0 +1,8 @@
+# Inference-only dependencies for the FastAPI container (no PyTorch).
+fastapi
+uvicorn[standard]
+python-multipart
+onnxruntime
+numpy
+pillow
+opencv-python-headless

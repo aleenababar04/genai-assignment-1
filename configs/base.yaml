@@ -1,0 +1,26 @@
+# Shared settings used by every script. Paths are relative to the repo root.
+
+seed: 42            # used for random, NumPy, PyTorch and Optuna
+image_size: 128     # all images are resized to 128x128
+
+# Datasets
+data:
+  pet_dir: data/oxford-iiit-pet   # Oxford-IIIT Pet
+  fs2k_dir: data/FS2K             # FS2K face/sketch pairs
+  manifests_dir: manifests        # split files and corruption manifests (committed; data/ is git-ignored)
+
+# Fraction of the training data held out for validation
+val_fraction:
+  pet: 0.2
+  fs2k: 0.15
+
+# Output folders
+optuna_studies_dir: optuna_studies   # one SQLite .db file per study
+checkpoints_dir: checkpoints         # saved model weights
+
+# DataLoader
+num_workers: 2      # set to 0 on Windows if workers cause problems
+
+# Weights & Biases (the WANDB_PROJECT environment variable overrides this)
+wandb:
+  project: genai-a1

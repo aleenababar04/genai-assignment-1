@@ -1,0 +1,37 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data and training outputs (never committed)
+/data/
+wandb/
+mlruns/
+checkpoints/
+outputs/
+*.pt
+*.pth
+*.ckpt
+
+# Secrets
+.env
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# LaTeX build files
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+
+# Misc
+*.pdf
+!report/*.pdf
+.vscode/
+.DS_Store
+Thumbs.db

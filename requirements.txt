@@ -1,0 +1,24 @@
+# Training / evaluation / export dependencies.
+# Local (CPU-only) machines: install torch first with
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# Kaggle / Colab already ship a CUDA build of torch.
+# Windows with Smart App Control: if SQLAlchemy (used by Optuna) fails with
+# "An Application Control policy has blocked this file", reinstall it without
+# its compiled extensions (PowerShell):
+#   $env:DISABLE_SQLALCHEMY_CEXT = '1'
+#   pip install --force-reinstall --no-deps --no-binary sqlalchemy sqlalchemy
+torch
+torchvision
+optuna
+wandb
+onnx
+onnxruntime
+pytorch-msssim
+numpy
+pillow
+pyyaml
+scikit-learn
+matplotlib
+tqdm
+python-dotenv
+pytest
