@@ -11,6 +11,7 @@ mlruns/
 checkpoints/
 outputs/
 *_outputs.zip
+report_overleaf.zip
 *_outputs/
 *.pt
 *.pth
