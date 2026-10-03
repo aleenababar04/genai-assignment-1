@@ -474,32 +474,36 @@ search space.
 \toprule
 Hyperparameter & Range (scale) & Selected \\
 \midrule
-Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & \na \\
-Batch size & \{32, 64, 128\} & \na \\
-Bottleneck channels $C_z$ & \{16, 32, 64, 128\} & \na \\
-Base channels $c$ & \{32, 48, 64\} & \na \\
-Dropout (latent) & 0--0.3 (linear) & \na \\
-Loss weight $\alpha$ & 0.5--0.95 (linear) & \na \\
+Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & $6.3\times10^{-4}$ \\
+Batch size & \{32, 64, 128\} & 32 \\
+Bottleneck channels $C_z$ & \{16, 32, 64, 128\} & 128 \\
+Base channels $c$ & \{32, 48, 64\} & 64 \\
+Dropout (latent) & 0--0.3 (linear) & 0.035 \\
+Loss weight $\alpha$ & 0.5--0.95 (linear) & 0.552 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill "Selected" from configs/task1_udae_best.yaml and the study optuna_studies/task1_udae.db.
-\TODO{Fill from \file{configs/task1_udae_best.yaml}.}
 \end{table}
 
 \subsection{Results}
 \label{sec:task1_results}
-% TODO(results): Optuna outcome for Task 1.
-\TODO{Report the number of completed and pruned trials, the best trial
-number, its objective, and the selected configuration (Table~\ref{tab:optuna_summary});
-describe how the objective varied with $\alpha$ and $C_z$ (Optuna history and
-parameter-importance plots, Fig.~\ref{fig:task1_optuna}).}
+Of the 30 trials, 19 ran to completion and 11 were stopped by the median
+pruner. The best was trial~20 with a validation objective of 0.1192
+(PSNR 20.96\,dB, SSIM 0.672 after its 10 epochs), using the configuration in
+Table~\ref{tab:task1_space}. Fig.~\ref{fig:task1_optuna} shows the history and
+the fANOVA importances: the learning rate explains most of the variation
+(0.67), followed by dropout (0.21) and $\alpha$ (0.10), while the bottleneck
+size, base width and batch size matter little within the searched ranges.
+The search settled on the widest bottleneck ($C_z=128$, a $12\times$
+compression) and almost no dropout, a preference for capacity that is
+consistent with the detail loss discussed below. The selected $\alpha=0.55$
+weights SSIM more heavily than the suggested starting value of 0.8. The final
+model was retrained for 80 epochs (43 minutes on a Kaggle T4 GPU).
 
 \begin{figure}[t]
 \centering
 \figOrTodo{figures/task1_udae_optuna.png}{\columnwidth}{Optuna optimisation history and
-parameter importances for Task 1 (export from the study with optuna-dashboard
-or optuna.visualization)}
+parameter importances for Task 1}
 \caption{Task 1 Optuna study.}
 \label{fig:task1_optuna}
 \end{figure}
@@ -527,24 +531,24 @@ image before restoration).}
 \toprule
 Cond. & Sev. & In PSNR & PSNR & In SSIM & SSIM & L1 \\
 \midrule
-Clean & --   & \na & \na & \na & \na & \na \\
-S\&P  & low  & \na & \na & \na & \na & \na \\
-S\&P  & med. & \na & \na & \na & \na & \na \\
-S\&P  & high & \na & \na & \na & \na & \na \\
-Blur  & low  & \na & \na & \na & \na & \na \\
-Blur  & med. & \na & \na & \na & \na & \na \\
-Blur  & high & \na & \na & \na & \na & \na \\
-Occl. & low  & \na & \na & \na & \na & \na \\
-Occl. & med. & \na & \na & \na & \na & \na \\
-Occl. & high & \na & \na & \na & \na & \na \\
+Clean & --   & $\infty$ & 25.21 & 1.000 & 0.796 & 0.040 \\
+S\&P  & low  & 20.13 & 25.21 & 0.602 & 0.796 & 0.040 \\
+S\&P  & med. & 15.87 & 25.18 & 0.340 & 0.793 & 0.040 \\
+S\&P  & high & 13.14 & 25.07 & 0.204 & 0.786 & 0.040 \\
+Blur  & low  & 32.34 & 25.36 & 0.944 & 0.796 & 0.039 \\
+Blur  & med. & 26.77 & 25.30 & 0.806 & 0.789 & 0.039 \\
+Blur  & high & 24.35 & 24.69 & 0.692 & 0.745 & 0.042 \\
+Occl. & low  & 16.70 & 23.16 & 0.861 & 0.754 & 0.046 \\
+Occl. & med. & 13.22 & 21.72 & 0.726 & 0.713 & 0.052 \\
+Occl. & high & 10.74 & 19.99 & 0.537 & 0.648 & 0.063 \\
 \midrule
-Corr. & all & \na & \na & \na & \na & \na \\
-All       & all & \na & \na & \na & \na & \na \\
+Corr. & all & 19.25 & 23.96 & 0.635 & 0.758 & 0.045 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task1_udae_test_metrics.csv.
-\TODO{Fill from \file{report/results/task1_udae_test_metrics.csv}.}
+Each row averages 3,669 test images; ``Corr.'' averages the 33,021
+corrupted items. An overall mean including clean inputs is not shown because
+an unchanged clean input has infinite PSNR.
 \end{table}
 
 \begin{figure}[t]
@@ -555,11 +559,21 @@ All       & all & \na & \na & \na & \na & \na \\
 \label{fig:task1_bars}
 \end{figure}
 
-% TODO(results): interpret Table task1_results and Fig. task1_bars.
-\TODO{Interpret Table~\ref{tab:task1_results} and Fig.~\ref{fig:task1_bars}:
-which corruption and severity is restored best/worst, how restoration
-compares with the input baseline, and whether clean inputs are degraded by
-passing through the autoencoder.}
+Table~\ref{tab:task1_results} and Fig.~\ref{fig:task1_bars} show three
+regimes. (i)~Salt-and-pepper noise is removed almost completely: the output
+quality ($\approx$25.1\,dB, SSIM $\approx$0.79) hardly depends on the noise
+level, so the gain grows with severity (+11.9\,dB at the high level).
+(ii)~Occlusion is improved substantially (+6.5 to +9.3\,dB) but remains the
+hardest condition, because the hidden content must be invented rather than
+recovered; at low and medium occlusion the SSIM is even slightly below the
+input's, because the input is perfect outside the small masks while the
+model softens the whole image. (iii)~Clean and mildly blurred images are made
+\emph{worse}: every output is limited to about 25\,dB, the reconstruction
+ceiling of the $8\times8\times128$ bottleneck, which cannot carry fine
+texture. The output quality is therefore almost constant across inputs, and
+restoration helps or hurts depending on whether the input was below or above
+that ceiling. Averaged over all corrupted inputs, PSNR rises from 19.25 to
+23.96\,dB and SSIM from 0.635 to 0.758.
 
 \begin{figure*}[t]
 \centering
@@ -570,17 +584,29 @@ corrupted input, restored output, absolute error (fixed colour scale 0--0.5).}
 \label{fig:task1_examples}
 \end{figure*}
 
-% TODO(results): discuss the twelve examples in Fig. task1_examples.
-\TODO{Discuss the twelve examples of Fig.~\ref{fig:task1_examples}: where
-the error maps concentrate (edges, texture, occluded regions).}
+In the twelve examples of Fig.~\ref{fig:task1_examples} the error maps are
+low and diffuse for noise and blur, with the remaining error on edges and fur
+texture, which come out visibly smoothed. For occlusion the error
+concentrates inside the filled rectangles, which are plausible blends of the
+surrounding colours rather than reconstructions of the hidden content.
 
 \subsection{Skip-connection ablation}
 \label{sec:task1_ablation}
-% TODO(results): run train_udae --mode final --skip, then eval_udae --name task1_udae_skip.
-\TODO{Train \file{python -m src.training.train_udae --mode final --skip} and
-evaluate with \file{python -m src.evaluation.eval_udae --name task1_udae_skip};
-fill Table~\ref{tab:task1_ablation} from \file{report/results/task1_udae_skip_test_metrics.csv}
-and state what the limited skip changes and whether it weakens the bottleneck.}
+To measure what the bottleneck costs, the selected configuration was
+retrained with one skip connection that concatenates the $16\times16$ encoder
+feature map into the decoder, with all other settings unchanged.
+Table~\ref{tab:task1_ablation} averages each corruption over its three
+severities. The skip improves every condition: by 4.75\,dB on clean inputs,
+4.22\,dB on salt-and-pepper, 2.97\,dB on blur and only 1.23\,dB on occlusion.
+The gain is largest where fine detail is present in the input and must
+survive to the output, and smallest where the content is missing, which is
+consistent with the skip transporting detail around the bottleneck rather
+than adding restoration ability. Because a $16\times16$ feature map is still
+an eight-fold spatial reduction, the network cannot simply copy its input:
+high-severity salt-and-pepper is still restored from 13.14 to 28.81\,dB. We
+nevertheless keep the skip-free model as the Task~1 system, so that the
+bottleneck requirement holds without qualification, and report the skip
+variant as evidence of the trade-off.
 
 \begin{table}[t]
 \centering
@@ -593,11 +619,11 @@ and state what the limited skip changes and whether it weakens the bottleneck.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Condition & PSNR & SSIM & PSNR & SSIM \\
 \midrule
-Clean           & \na & \na & \na & \na \\
-Salt-and-pepper & \na & \na & \na & \na \\
-Blur            & \na & \na & \na & \na \\
-Occlusion       & \na & \na & \na & \na \\
-Corrupted (all) & \na & \na & \na & \na \\
+Clean           & 25.21 & 0.796 & 29.96 & 0.923 \\
+Salt-and-pepper & 25.15 & 0.792 & 29.37 & 0.908 \\
+Blur            & 25.12 & 0.777 & 28.09 & 0.854 \\
+Occlusion       & 21.62 & 0.705 & 22.85 & 0.793 \\
+Corrupted (all) & 23.96 & 0.758 & 26.77 & 0.852 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -609,16 +635,29 @@ Corrupted (all) & \na & \na & \na & \na \\
 \caption{Task 1 failure cases (lowest SSIM per condition).}
 \label{fig:task1_failures}
 \end{figure*}
-% TODO(results): discuss the four failure cases.
-\TODO{Explain each of the four failures in Fig.~\ref{fig:task1_failures} and
-why it occurred (e.g.\ occluded content that is not recoverable from the
-input, dense noise on fine texture).}
+Fig.~\ref{fig:task1_failures} shows the lowest-SSIM item of each condition.
+Two failures share one cause: a cat photographed against a black background.
+For its clean version (PSNR 11.1\,dB) and its high-occlusion version
+(9.8\,dB) the model paints the black background grey-brown, exactly as it
+would fill an occlusion mask. The model is never told which corruption is
+present and occlusion masks are black, so a large black region is ambiguous
+and the model chooses the occlusion explanation. This is a direct consequence
+of the corruption-blind design and motivates the explicit corruption
+classifier of Task~2. The other two failures are one image of a dog in a
+dense flower field under high salt-and-pepper noise and under high blur
+(17.1 and 17.4\,dB): the high-frequency texture cannot pass the bottleneck,
+so the output is a smeared, painterly approximation.
 
 \subsection{Discussion}
-% TODO(results): Task 1 discussion.
-\TODO{Discuss what the results show about a single shared representation for
-all conditions, the role of the selected $\alpha$ and $C_z$, and how this
-motivated Tasks 2 and 3.}
+A single shared representation is enough to remove all three corruptions
+without being told which one is present, and its most visible cost is not a
+corruption-specific error but a uniform quality ceiling set by the
+bottleneck; Optuna's choice of the widest bottleneck and the ablation both
+point to the same limit. Two weaknesses remain that a corruption-aware system
+could address: clean and mildly degraded inputs are made worse, and ambiguous
+inputs such as dark backgrounds are treated as occluded. Task~2 tests whether
+detecting the corruption first, and bypassing clean images entirely, avoids
+these errors.
 
 % =====================================================================
 \section{Task 2: Classification and Hard-Routed Specialists}
