@@ -1,0 +1,33 @@
+% Application architecture (docker-compose.yml, frontend/, backend/).
+% Included from main.tex with \input{figures/tikz/app_architecture}.
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    blk/.style={draw, rounded corners=1pt, minimum height=1.0cm, minimum width=2.1cm,
+                align=center, font=\scriptsize},
+    ext/.style={blk, fill=gray!10},
+    fe/.style={blk, fill=blue!10},
+    be/.style={blk, fill=green!12},
+    st/.style={blk, fill=orange!20},
+    box/.style={draw, dashed, rounded corners=3pt, inner sep=6pt},
+    arr/.style={-{Stealth[length=1.8mm]}, thick},
+    darr/.style={Stealth-Stealth, thick}
+  ]
+  \node[ext] (br)  at (0,0)    {Browser\\React + Tailwind\\single-page app};
+  \node[fe]  (ng)  at (3.2,0)  {nginx\\static build\\proxy \texttt{/api/*}};
+  \node[be]  (api) at (6.4,0)  {FastAPI (uvicorn)\\validation, resize,\\corruptions};
+  \node[be]  (ort) at (9.6,0)  {ONNX Runtime\\model registry\\(7 sessions)};
+  \node[st]  (mod) at (9.6,-2.3) {\texttt{models/}\\7 ONNX files\\(read-only volume)};
+  \node[st]  (smp) at (6.4,-2.3) {\texttt{samples/}\\gallery images\\(read-only volume)};
+  \node[ext] (rel) at (12.6,-2.3) {GitHub Release\\\texttt{models-v1}};
+
+  \draw[darr] (br) -- node[above, font=\tiny] {:8080} (ng);
+  \draw[darr] (ng) -- node[above, font=\tiny] {:8000} (api);
+  \draw[darr] (api) -- (ort);
+  \draw[arr] (mod) -- (ort);
+  \draw[arr] (smp) -- (api);
+  \draw[arr] (rel) -- node[above, font=\tiny] {download script} (mod);
+
+  \node[box, fit=(ng), label={[font=\tiny]above:frontend container}] {};
+  \node[box, fit=(api)(ort), label={[font=\tiny]above:backend container}] {};
+\end{tikzpicture}%
+}

@@ -1,0 +1,52 @@
+% Task 1: universal denoising autoencoder (src/models/autoencoder.py).
+% c = base_channels, C_z = latent_channels (both tuned by Optuna).
+% Included from main.tex with \input{figures/tikz/task1_udae}.
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    blk/.style={draw, rounded corners=1pt, minimum height=1.0cm, minimum width=1.35cm,
+                align=center, font=\scriptsize},
+    io/.style={blk, fill=gray!10},
+    enc/.style={blk, fill=blue!10},
+    dec/.style={blk, fill=green!12},
+    lat/.style={blk, fill=orange!25, very thick},
+    arr/.style={-{Stealth[length=1.8mm]}, thick}
+  ]
+  % Encoder row (left to right).
+  \node[io]  (inp) at (0,0)    {Input $\tilde{x}$\\$3\times128^2$};
+  \node[enc] (s)  at (1.8,0)  {Stem conv\\$c\times128^2$};
+  \node[enc] (d1) at (3.6,0)  {Down\\$c\times64^2$};
+  \node[enc] (d2) at (5.4,0)  {Down\\$2c\times32^2$};
+  \node[enc] (d3) at (7.2,0)  {Down\\$4c\times16^2$};
+  \node[enc] (d4) at (9.0,0)  {Down\\$8c\times8^2$};
+  % Bottleneck.
+  \node[lat] (z)  at (9.0,-1.9) {$1{\times}1$ conv\\+ Dropout2d\\$z$: $C_z\times8^2$};
+  % Decoder row (right to left).
+  \node[dec] (u0) at (7.2,-1.9) {Conv\\$8c\times8^2$};
+  \node[dec] (u1) at (5.4,-1.9) {Up\\$4c\times16^2$};
+  \node[dec] (u2) at (3.6,-1.9) {Up\\$2c\times32^2$};
+  \node[dec] (u3) at (1.8,-1.9) {Up\\$c\times64^2$};
+  \node[dec] (u4) at (0,-1.9)   {Up\\$c\times128^2$};
+  \node[io]  (outp) at (0,-3.6)  {$3{\times}3$ conv\\+ sigmoid\\$\hat{x}$: $3\times128^2$};
+
+  \draw[arr] (inp) -- (s);
+  \draw[arr] (s) -- (d1);
+  \draw[arr] (d1) -- (d2);
+  \draw[arr] (d2) -- (d3);
+  \draw[arr] (d3) -- (d4);
+  \draw[arr] (d4) -- (z);
+  \draw[arr] (z) -- (u0);
+  \draw[arr] (u0) -- (u1);
+  \draw[arr] (u1) -- (u2);
+  \draw[arr] (u2) -- (u3);
+  \draw[arr] (u3) -- (u4);
+  \draw[arr] (u4) -- (outp);
+  % Optional single skip at 16x16 (ablation only, off in the main model).
+  \draw[arr, dashed, red!70!black] (d3.south) .. controls (6.6,-1.0) and (4.6,-1.0) .. (u2.north);
+  \node[font=\tiny, red!70!black, align=center] at (5.6,-0.75) {optional 16$\times$16 skip\\(ablation only)};
+
+  \node[font=\scriptsize, align=left, anchor=west] at (1.6,-3.6)
+    {Down: conv $3{\times}3$ s2 + conv $3{\times}3$ (BN, ReLU)\\
+     Up: nearest $\times2$ + 2 conv $3{\times}3$ (BN, ReLU)\\
+     Encoder $E$: input $\rightarrow z$;\quad decoder $D$: $z \rightarrow \hat{x}$};
+\end{tikzpicture}%
+}

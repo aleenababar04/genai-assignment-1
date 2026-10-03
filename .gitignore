@@ -10,6 +10,8 @@ wandb/
 mlruns/
 checkpoints/
 outputs/
+*_outputs.zip
+*_outputs/
 *.pt
 *.pth
 *.ckpt

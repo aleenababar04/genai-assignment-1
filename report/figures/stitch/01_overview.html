@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RestoreLab - Computational Imaging Overview</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-surface": "#283044",
+            "surface-container": "#eaedff",
+            "error-container": "#ffdad6",
+            "on-primary-container": "#dad7ff",
+            "tertiary-fixed-dim": "#fbabff",
+            "secondary-container": "#57dffe",
+            "on-secondary-fixed": "#001f26",
+            "inverse-primary": "#c3c0ff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-background": "#131b2e",
+            "tertiary": "#7f0091",
+            "surface-container-highest": "#dae2fd",
+            "surface-bright": "#faf8ff",
+            "on-primary-fixed-variant": "#3323cc",
+            "surface": "#faf8ff",
+            "on-primary": "#ffffff",
+            "on-secondary-container": "#006172",
+            "on-surface": "#131b2e",
+            "surface-tint": "#4d44e3",
+            "on-error-container": "#93000a",
+            "on-surface-variant": "#464555",
+            "background": "#faf8ff",
+            "on-tertiary-fixed-variant": "#7c008e",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-container-high": "#e2e7ff",
+            "inverse-on-surface": "#eef0ff",
+            "tertiary-container": "#a500bd",
+            "on-primary-fixed": "#0f0069",
+            "outline-variant": "#c7c4d8",
+            "secondary": "#00687a",
+            "primary": "#3525cd",
+            "error": "#ba1a1a",
+            "tertiary-fixed": "#ffd6fd",
+            "surface-container-low": "#f2f3ff",
+            "on-tertiary-fixed": "#36003e",
+            "on-error": "#ffffff",
+            "primary-container": "#4f46e5",
+            "on-tertiary": "#ffffff",
+            "primary-fixed-dim": "#c3c0ff",
+            "secondary-fixed": "#acedff",
+            "surface-dim": "#d2d9f4",
+            "primary-fixed": "#e2dfff",
+            "outline": "#777587",
+            "surface-variant": "#dae2fd",
+            "on-secondary": "#ffffff",
+            "on-tertiary-container": "#ffcafe",
+            "surface-container-lowest": "#ffffff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-sm": "0.5rem",
+            "gutter-compact": "0.5rem",
+            "space-xs": "0.25rem",
+            "margin": "1.5rem",
+            "space-lg": "1.5rem",
+            "margin-panel": "1rem",
+            "gutter": "1rem",
+            "space-md": "1rem",
+            "space-xl": "2rem"
+          },
+          fontFamily: {
+            "label-mono-lg": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "label-mono-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-ui": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-md": ["Inter"],
+            "label-mono-sm": ["JetBrains Mono"],
+            "headline-sm": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          fontSize: {
+            "label-mono-lg": ["13px", { lineHeight: "18px", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "headline-lg": ["22px", { lineHeight: "28px", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "label-mono-md": ["11px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+            "body-sm": ["12px", { lineHeight: "16px", letterSpacing: "0em", fontWeight: "400" }],
+            "body-lg": ["15px", { lineHeight: "22px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-ui": ["11px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "500" }],
+            "headline-xl": ["30px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "body-md": ["13px", { lineHeight: "18px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-mono-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "400" }],
+            "headline-sm": ["15px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "600" }],
+            "headline-md": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .pulse-dot {
+      animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] font-body-md text-body-md antialiased h-screen overflow-hidden flex flex-col">
+<!-- Shared Component: TopNavBar -->
+<header class="w-full flex items-center justify-between px-6 bg-surface-container-lowest border-b border-[#E2E8F0] z-40 h-14 shrink-0 shadow-sm">
+<div class="flex items-center space-x-8">
+<!-- Brand Logo / Identity -->
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">csv</span>
+</div>
+<div class="text-headline-sm font-headline-sm font-bold tracking-tight text-[#0F172A]">
+          RestoreLab
+        </div>
+<span class="text-label-mono-sm font-label-mono-sm bg-surface-container-high text-primary px-1.5 py-0.5 rounded font-medium">v2.4.0</span>
+</div>
+<!-- Navigation Links from JSON -->
+<nav class="hidden md:flex items-center space-x-6 text-label-ui font-label-ui">
+<a class="border-b-2 border-primary text-primary font-semibold py-4 transition-colors" href="#">Studio</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Pipelines</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Evaluation</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Datasets</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Design System</a>
+</nav>
+</div>
+<!-- Trailing Actions Cluster -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-1 border-r border-[#E2E8F0] pr-3">
+<button class="p-1.5 text-on-surface-variant hover:bg-[#F1F5F9] hover:text-[#0F172A] rounded transition-colors" title="terminal">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-[#F1F5F9] hover:text-[#0F172A] rounded transition-colors" title="tune">
+<span class="material-symbols-outlined">tune</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-[#F1F5F9] hover:text-[#0F172A] rounded transition-colors" title="help_outline">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+<div class="flex items-center space-x-3">
+<a class="text-label-ui font-label-ui text-on-surface-variant hover:text-[#0F172A] transition-colors" href="#">Docs</a>
+<button class="h-8 px-3 rounded bg-primary-container text-white text-label-ui font-label-ui font-medium flex items-center space-x-1.5 active:translate-y-0.5 transition-transform border border-[#4338CA]">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Export Config</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-[#E2E8F0] overflow-hidden bg-surface-container-high flex items-center justify-center" title="Lead Biometrics Researcher Avatar">
+<img class="w-full h-full object-cover" data-alt="A clean, professional headshot portrait of a senior computational imaging female researcher wearing minimalist spectacles, set against a pristine, neutral-lit laboratory backdrop in cool slate and crisp white tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFbnu2lVUpos2wpyiKiBtmUsrvMaS4GmPYfl7lqFgJk_UXzuOg9troEKWLbz2Mq1c5l1HAMagB_8SkS0UaGNOBOgxNgR0TyBDKreYcbqGpOGs5YohyCWxWQJKy8_xKg8IkdIMgqN_aJDU1p07SdQB6BUTWUDlWhRavuAdmPXG2WQ2w1l3zfejLEnDq32AWrXDuaH2vNB6fNCDN0PQ0iqCe18cEb4Yf1Gc41tzffuCpPjC7nRgqwTKWmQ"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Application Shell Body -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Navigation Sidebar -->
+<aside class="w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between p-4 shrink-0 z-30 select-none">
+<div class="space-y-6">
+<!-- Sidebar Workspace Header -->
+<div class="px-2">
+<div class="text-label-ui font-label-ui tracking-wider text-outline uppercase font-semibold">Engine Workspaces</div>
+<div class="text-headline-sm font-headline-sm text-[#0F172A] mt-0.5">Biometrics Engine</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="space-y-1">
+<!-- Overview Tab (ACTIVE) -->
+<a class="flex items-center space-x-3 bg-surface-container-low text-primary font-semibold rounded-lg px-3 py-2.5 border-l-2 border-primary text-body-md font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="tracking-tight">Overview</span>
+</a>
+<!-- Universal Restoration -->
+<a class="flex items-center space-x-3 text-on-surface-variant hover:bg-surface-container-low hover:text-[#0F172A] rounded-lg px-3 py-2.5 text-body-md font-body-md transition-colors" href="#">
+<span class="material-symbols-outlined">auto_fix_high</span>
+<span class="tracking-tight">Universal Restoration</span>
+</a>
+<!-- Hard-Routed Restoration -->
+<a class="flex items-center space-x-3 text-on-surface-variant hover:bg-surface-container-low hover:text-[#0F172A] rounded-lg px-3 py-2.5 text-body-md font-body-md transition-colors" href="#">
+<span class="material-symbols-outlined">alt_route</span>
+<span class="tracking-tight">Hard-Routed Restoration</span>
+</a>
+<!-- Soft Mixture-of-Experts Restoration -->
+<a class="flex items-center space-x-3 text-on-surface-variant hover:bg-surface-container-low hover:text-[#0F172A] rounded-lg px-3 py-2.5 text-body-md font-body-md transition-colors" href="#">
+<span class="material-symbols-outlined">call_split</span>
+<span class="tracking-tight">Soft Mixture-of-Experts</span>
+</a>
+<!-- Face-to-Sketch Generator -->
+<a class="flex items-center space-x-3 text-on-surface-variant hover:bg-surface-container-low hover:text-[#0F172A] rounded-lg px-3 py-2.5 text-body-md font-body-md transition-colors" href="#">
+<span class="material-symbols-outlined">face</span>
+<span class="tracking-tight">Face-to-Sketch Generator</span>
+</a>
+</nav>
+</div>
+<!-- Bottom System Status Card -->
+<div class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg space-y-2">
+<div class="flex items-center justify-between pb-1 border-b border-[#E2E8F0]">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-[#16A34A] pulse-dot"></span>
+<span class="text-label-ui font-label-ui font-medium text-[#0F172A]">Backend online</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline">v2.4</span>
+</div>
+<div class="space-y-1 pt-0.5">
+<div class="text-label-mono-sm font-label-mono-sm text-[#64748B] flex justify-between">
+<span>ONNX models:</span>
+<span class="text-[#0F172A] font-semibold">4 of 4 loaded</span>
+</div>
+<div class="text-label-mono-sm font-label-mono-sm text-[#64748B] flex justify-between">
+<span>Last inference:</span>
+<span class="text-primary font-semibold">38 ms</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas Area -->
+<main class="p-8 bg-[#F8FAFC] flex-1 overflow-y-auto">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-[#E2E8F0]">
+<div>
+<h1 class="text-headline-xl font-headline-xl text-[#0F172A] tracking-tight">Overview</h1>
+<p class="text-body-lg font-body-lg text-[#64748B] mt-1">
+              Four workspaces for restoring corrupted images and generating sketches from face photos.
+            </p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center px-2.5 py-1 rounded bg-[#FFFFFF] border border-[#E2E8F0] text-label-mono-md font-label-mono-md text-[#0F172A] shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
+              Resolution: 128×128
+            </span>
+<span class="inline-flex items-center px-2.5 py-1 rounded bg-[#FFFFFF] border border-[#E2E8F0] text-label-mono-md font-label-mono-md text-[#0F172A] shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-[#64748B] mr-1">bolt</span>
+              FP16 TensorRT
+            </span>
+</div>
+</div>
+<!-- 2x2 Grid of Workspace Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Workspace Card 1: Universal Restoration -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center">
+<span class="material-symbols-outlined">auto_fix_high</span>
+</div>
+<!-- Clean Variant Chip -->
+<span class="h-5 px-2 rounded text-label-mono-sm font-label-mono-sm uppercase font-medium bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0] inline-flex items-center">
+                  All Corruptions
+                </span>
+</div>
+<div class="mt-4">
+<h3 class="text-headline-md font-headline-md text-[#0F172A]">Universal Restoration</h3>
+<p class="text-body-md font-body-md text-[#64748B] mt-1">
+                  One autoencoder restores any corruption.
+                </p>
+</div>
+<!-- Parameter Chips -->
+<div class="flex flex-wrap gap-2 mt-5">
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Input: 128×128
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Latency: ~34 ms
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Single-model baseline
+                </span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+<span class="text-label-ui font-label-ui text-outline">Pipeline 01 • UNet-AE</span>
+<button class="h-9 px-4 rounded bg-[#4F46E5] text-white text-label-ui font-label-ui font-medium flex items-center space-x-1.5 hover:bg-[#4338CA] active:translate-y-0.5 transition-all">
+<span>Open workspace</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Workspace Card 2: Hard-Routed Restoration -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-[#FEF3C7] text-[#F59E0B] flex items-center justify-center">
+<span class="material-symbols-outlined">alt_route</span>
+</div>
+<!-- Salt-and-Pepper Variant Chip -->
+<span class="h-5 px-2 rounded text-label-mono-sm font-label-mono-sm uppercase font-medium bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A] inline-flex items-center">
+                  Classifier Directed
+                </span>
+</div>
+<div class="mt-4">
+<h3 class="text-headline-md font-headline-md text-[#0F172A]">Hard-Routed Restoration</h3>
+<p class="text-body-md font-body-md text-[#64748B] mt-1">
+                  A classifier detects the corruption and routes the image to one specialist.
+                </p>
+</div>
+<!-- Parameter Chips -->
+<div class="flex flex-wrap gap-2 mt-5">
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  4 Specialized Models
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Routing latency: 4 ms
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Discrete Dispatch
+                </span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+<span class="text-label-ui font-label-ui text-outline">Pipeline 02 • RouterNet</span>
+<button class="h-9 px-4 rounded bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] hover:border-[#CBD5E1] text-label-ui font-label-ui font-medium flex items-center space-x-1.5 active:translate-y-0.5 transition-all">
+<span>Open workspace</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Workspace Card 3: Soft Mixture-of-Experts Restoration -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-[#ECFEFF] text-[#06B6D4] flex items-center justify-center">
+<span class="material-symbols-outlined">call_split</span>
+</div>
+<!-- Blur Variant Chip -->
+<span class="h-5 px-2 rounded text-label-mono-sm font-label-mono-sm uppercase font-medium bg-[#ECFEFF] text-[#0E7490] border border-[#A5F3FC] inline-flex items-center">
+                  Gating Network
+                </span>
+</div>
+<div class="mt-4">
+<h3 class="text-headline-md font-headline-md text-[#0F172A]">Soft Mixture-of-Experts Restoration</h3>
+<p class="text-body-md font-body-md text-[#64748B] mt-1">
+                  A gating network blends four expert branches.
+                </p>
+</div>
+<!-- Parameter Chips -->
+<div class="flex flex-wrap gap-2 mt-5">
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Continuous Soft-Weights
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Alpha-blended output
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Residual MoE
+                </span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+<span class="text-label-ui font-label-ui text-outline">Pipeline 03 • MoE-Quad</span>
+<button class="h-9 px-4 rounded bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] hover:border-[#CBD5E1] text-label-ui font-label-ui font-medium flex items-center space-x-1.5 active:translate-y-0.5 transition-all">
+<span>Open workspace</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Workspace Card 4: Face-to-Sketch Generator -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-[#FDF4FF] text-[#D946EF] flex items-center justify-center">
+<span class="material-symbols-outlined">face</span>
+</div>
+<!-- Occlusion Variant Chip -->
+<span class="h-5 px-2 rounded text-label-mono-sm font-label-mono-sm uppercase font-medium bg-[#FDF4FF] text-[#A21CAF] border border-[#F5D0FE] inline-flex items-center">
+                  Conditional GAN
+                </span>
+</div>
+<div class="mt-4">
+<h3 class="text-headline-md font-headline-md text-[#0F172A]">Face-to-Sketch Generator</h3>
+<p class="text-body-md font-body-md text-[#64748B] mt-1">
+                  A conditional GAN turns a face photo into a sketch in three styles.
+                </p>
+</div>
+<!-- Parameter Chips -->
+<div class="flex flex-wrap gap-2 mt-5">
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Pencil / Charcoal / Forensic
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  128×128 Latent vector
+                </span>
+<span class="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-label-mono-sm font-label-mono-sm text-[#464555]">
+                  Paired Pix2Pix
+                </span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+<span class="text-label-ui font-label-ui text-outline">Pipeline 04 • cGAN-Synth</span>
+<button class="h-9 px-4 rounded bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] hover:border-[#CBD5E1] text-label-ui font-label-ui font-medium flex items-center space-x-1.5 active:translate-y-0.5 transition-all">
+<span>Open workspace</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Full-Width System Telemetry & Architecture Card -->
+<div class="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm">
+<div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E2E8F0]">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary">memory</span>
+<h2 class="text-headline-sm font-headline-sm text-[#0F172A]">System Telemetry & Architecture</h2>
+</div>
+<div class="flex items-center space-x-2 text-label-mono-sm font-label-mono-sm text-[#64748B]">
+<span class="w-2 h-2 rounded-full bg-[#16A34A] pulse-dot"></span>
+<span class="text-[#0F172A] font-medium">Online</span>
+<span>•</span>
+<span>HTTP/2 REST + gRPC</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+<!-- Models Loaded Cluster -->
+<div class="lg:col-span-8 space-y-2">
+<span class="text-label-ui font-label-ui text-outline uppercase tracking-wider block">Active Runtime Modules</span>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+<!-- Model 1 -->
+<div class="p-2.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-label-mono-md font-label-mono-md text-[#0F172A] font-semibold truncate" title="Universal-AE v2.1">Universal-AE</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">Loaded</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline truncate">v2.1 • 14.8M param</span>
+</div>
+<!-- Model 2 -->
+<div class="p-2.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-label-mono-md font-label-mono-md text-[#0F172A] font-semibold truncate" title="HardRouter-MobileNet">HardRouter</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">Loaded</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline truncate">MobileNet • 3.2M param</span>
+</div>
+<!-- Model 3 -->
+<div class="p-2.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-label-mono-md font-label-mono-md text-[#0F172A] font-semibold truncate" title="SoftMoE-QuadBranch">SoftMoE</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">Loaded</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline truncate">QuadBranch • 28.4M</span>
+</div>
+<!-- Model 4 -->
+<div class="p-2.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-label-mono-md font-label-mono-md text-[#0F172A] font-semibold truncate" title="FaceSketch-cGAN">FaceSketch</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">Loaded</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline truncate">cGAN • 42.1M param</span>
+</div>
+</div>
+</div>
+<!-- Telemetry Metrics Cluster -->
+<div class="lg:col-span-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 space-y-2">
+<span class="text-label-ui font-label-ui text-outline uppercase tracking-wider block">Instrumentation Metrics</span>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-[#64748B]">Last inference:</span>
+<span class="font-label-mono-md text-label-mono-md text-[#4F46E5] font-semibold">38 ms</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-[#64748B]">Memory:</span>
+<span class="font-label-mono-md text-label-mono-md text-[#0F172A] font-semibold">1.4 GB / 8 GB</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-[#64748B]">Input Matrix:</span>
+<span class="font-label-mono-md text-label-mono-md text-[#0F172A] font-semibold">128×128 uint8</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,67 @@
+% Task 3: soft mixture-of-experts (src/models/soft_moe.py).
+% Included from main.tex with \input{figures/tikz/task3_soft_moe}.
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    blk/.style={draw, rounded corners=1pt, minimum height=0.75cm, minimum width=1.7cm,
+                align=center, font=\scriptsize},
+    io/.style={blk, fill=gray!10},
+    gate/.style={blk, fill=blue!10},
+    exp/.style={blk, fill=green!12},
+    idn/.style={blk, fill=yellow!20},
+    op/.style={draw, circle, inner sep=1pt, minimum size=0.5cm, font=\scriptsize},
+    arr/.style={-{Stealth[length=1.8mm]}, thick}
+  ]
+  \node[io]  (inp) at (0,0) {Input $\tilde{x}$\\$3\times128^2$};
+
+  \node[idn] (b0) at (2.8,2.1)  {Identity: $\tilde{x}$};
+  \node[exp] (b1) at (2.8,0.9)  {$A_{\mathrm{salt}}(\tilde{x})$};
+  \node[exp] (b2) at (2.8,-0.3) {$A_{\mathrm{blur}}(\tilde{x})$};
+  \node[exp] (b3) at (2.8,-1.5) {$A_{\mathrm{occ}}(\tilde{x})$};
+
+  \node[op] (m0) at (5.0,2.1)  {$\times$};
+  \node[op] (m1) at (5.0,0.9)  {$\times$};
+  \node[op] (m2) at (5.0,-0.3) {$\times$};
+  \node[op] (m3) at (5.0,-1.5) {$\times$};
+
+  \node[op] (sum) at (6.6,0.3) {$\Sigma$};
+  \node[io] (outp) at (8.2,0.3) {$\hat{x}$};
+
+  \node[gate] (g)  at (2.8,-3.0) {Gate $G$\\(init.\ from $C$)};
+  \node[gate] (sm) at (5.0,-3.0) {$w=\mathrm{softmax}$\\$(G(\tilde{x})/\tau)$};
+
+  % Input to every branch and to the gate.
+  \draw[thick] (inp.east) -- (1.2,0);
+  \draw[thick] (1.2,2.1) -- (1.2,-3.0);
+  \draw[arr] (1.2,2.1)  -- (b0.west);
+  \draw[arr] (1.2,0.9)  -- (b1.west);
+  \draw[arr] (1.2,-0.3) -- (b2.west);
+  \draw[arr] (1.2,-1.5) -- (b3.west);
+  \draw[arr] (1.2,-3.0) -- (g.west);
+
+  \draw[arr] (b0) -- (m0);
+  \draw[arr] (b1) -- (m1);
+  \draw[arr] (b2) -- (m2);
+  \draw[arr] (b3) -- (m3);
+
+  \draw[arr] (g) -- node[above, font=\tiny] {logits} (sm);
+  % Each multiplier receives its routing weight from below (blue labels);
+  % the weights are the outputs of the softmax node.
+  \node[font=\tiny, text=blue!70!black] (w0) at (5.0,1.5)  {$w_0$};
+  \node[font=\tiny, text=blue!70!black] (w1) at (5.0,0.3)  {$w_1$};
+  \node[font=\tiny, text=blue!70!black] (w2) at (5.0,-0.9) {$w_2$};
+  \draw[arr, blue!70!black] (w0) -- (m0);
+  \draw[arr, blue!70!black] (w1) -- (m1);
+  \draw[arr, blue!70!black] (w2) -- (m2);
+  \draw[arr, blue!70!black] (sm) -- node[right, font=\tiny] {$w_3$} (m3);
+  \node[font=\tiny, text=blue!70!black, align=center] at (3.9,-2.25) {$w_0,\dots,w_3$};
+
+  \draw[arr] (m0.east) -- (sum);
+  \draw[arr] (m1.east) -- (sum);
+  \draw[arr] (m2.east) -- (sum);
+  \draw[arr] (m3.east) -- (sum);
+  \draw[arr] (sum) -- (outp);
+
+  \node[font=\tiny, align=left, anchor=west] at (6.2,-2.1)
+    {All branches run on every image;\\experts init.\ from Task 2 specialists;\\$\tau$ fixed per run, stored in the graph};
+\end{tikzpicture}%
+}

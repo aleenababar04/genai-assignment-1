@@ -1,0 +1,157 @@
+% =====================================================================
+% references.bib -- bibliography of the Assignment 1 report.
+%
+% REMINDER TO THE STUDENT (remove before submission):
+%   Most of these works are marked in docs/decision_log.md as
+%   "to read first-hand". Read every cited work yourself before you
+%   submit, and check that each sentence in main.tex that cites it is
+%   actually supported by the paper. Delete a citation (and its entry)
+%   if you have not read the work.
+%
+% Only works named in docs/decision_log.md (or README acknowledgements)
+% are listed. Bibliographic details were checked on 2026-10-03 against:
+%   vincent2008      Crossref, DOI 10.1145/1390156.1390294
+%   wang2004ssim     Crossref, DOI 10.1109/TIP.2003.819861
+%   odena2016        distill.pub/2016/deconv-checkerboard (DOI 10.23915/distill.00003)
+%   akiba2019optuna  Crossref, DOI 10.1145/3292500.3330701; arXiv:1907.10902
+%   loshchilov2019   arXiv:1711.05101 (abstract page: "Published at ICLR 2019")
+%   jacobs1991       Crossref, DOI 10.1162/neco.1991.3.1.79
+%   shazeer2017      arXiv:1701.06538; venue ICLR 2017 (OpenReview id B1ckMDqlg,
+%                    listed as ICLR 2017 by the Stanford Scaling Intelligence lab page)
+%   isola2017        Crossref, DOI 10.1109/CVPR.2017.632
+%   mirza2014        arXiv:1411.1784
+%   heusel2017       proceedings.neurips.cc (NIPS 2017, Advances in NeurIPS 30)
+%   parkhi2012       Crossref, DOI 10.1109/CVPR.2012.6248092
+%   fan2022fs2k      FS2K GitHub README citation + Crossref, DOI 10.1007/s11633-022-1349-9
+%   ronneberger2015  Crossref, DOI 10.1007/978-3-319-24574-4_28; arXiv:1505.04597
+%   goodfellow2014   papers.nips.cc (NIPS 2014, Advances in NeurIPS 27)
+% Page numbers are given only where the source above listed them.
+% =====================================================================
+
+@inproceedings{vincent2008extracting,
+  author    = {Pascal Vincent and Hugo Larochelle and Yoshua Bengio and Pierre-Antoine Manzagol},
+  title     = {Extracting and Composing Robust Features with Denoising Autoencoders},
+  booktitle = {Proceedings of the 25th International Conference on Machine Learning (ICML)},
+  pages     = {1096--1103},
+  publisher = {ACM},
+  year      = {2008},
+  doi       = {10.1145/1390156.1390294}
+}
+
+@article{wang2004ssim,
+  author  = {Zhou Wang and Alan C. Bovik and Hamid R. Sheikh and Eero P. Simoncelli},
+  title   = {Image Quality Assessment: From Error Visibility to Structural Similarity},
+  journal = {IEEE Transactions on Image Processing},
+  volume  = {13},
+  number  = {4},
+  pages   = {600--612},
+  month   = apr,
+  year    = {2004},
+  doi     = {10.1109/TIP.2003.819861}
+}
+
+@article{odena2016deconvolution,
+  author  = {Augustus Odena and Vincent Dumoulin and Chris Olah},
+  title   = {Deconvolution and Checkerboard Artifacts},
+  journal = {Distill},
+  year    = {2016},
+  doi     = {10.23915/distill.00003},
+  url     = {https://distill.pub/2016/deconv-checkerboard}
+}
+
+@inproceedings{akiba2019optuna,
+  author    = {Takuya Akiba and Shotaro Sano and Toshihiko Yanase and Takeru Ohta and Masanori Koyama},
+  title     = {Optuna: A Next-generation Hyperparameter Optimization Framework},
+  booktitle = {Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining},
+  pages     = {2623--2631},
+  year      = {2019},
+  doi       = {10.1145/3292500.3330701}
+}
+
+@inproceedings{loshchilov2019decoupled,
+  author    = {Ilya Loshchilov and Frank Hutter},
+  title     = {Decoupled Weight Decay Regularization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019},
+  note      = {arXiv:1711.05101}
+}
+
+@article{jacobs1991adaptive,
+  author  = {Robert A. Jacobs and Michael I. Jordan and Steven J. Nowlan and Geoffrey E. Hinton},
+  title   = {Adaptive Mixtures of Local Experts},
+  journal = {Neural Computation},
+  volume  = {3},
+  number  = {1},
+  pages   = {79--87},
+  year    = {1991},
+  doi     = {10.1162/neco.1991.3.1.79}
+}
+
+@inproceedings{shazeer2017outrageously,
+  author    = {Noam Shazeer and Azalia Mirhoseini and Krzysztof Maziarz and Andy Davis and Quoc Le and Geoffrey Hinton and Jeff Dean},
+  title     = {Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2017},
+  note      = {arXiv:1701.06538}
+}
+
+@inproceedings{isola2017image,
+  author    = {Phillip Isola and Jun-Yan Zhu and Tinghui Zhou and Alexei A. Efros},
+  title     = {Image-to-Image Translation with Conditional Adversarial Networks},
+  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {5967--5976},
+  year      = {2017},
+  doi       = {10.1109/CVPR.2017.632}
+}
+
+@misc{mirza2014conditional,
+  author       = {Mehdi Mirza and Simon Osindero},
+  title        = {Conditional Generative Adversarial Nets},
+  howpublished = {arXiv preprint arXiv:1411.1784},
+  year         = {2014}
+}
+
+@inproceedings{heusel2017gans,
+  author    = {Martin Heusel and Hubert Ramsauer and Thomas Unterthiner and Bernhard Nessler and Sepp Hochreiter},
+  title     = {{GANs} Trained by a Two Time-Scale Update Rule Converge to a Local {Nash} Equilibrium},
+  booktitle = {Advances in Neural Information Processing Systems 30 (NIPS 2017)},
+  year      = {2017}
+}
+
+@inproceedings{parkhi2012cats,
+  author    = {Omkar M. Parkhi and Andrea Vedaldi and Andrew Zisserman and C. V. Jawahar},
+  title     = {Cats and Dogs},
+  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {3498--3505},
+  year      = {2012},
+  doi       = {10.1109/CVPR.2012.6248092}
+}
+
+@article{fan2022facial,
+  author  = {Deng-Ping Fan and Ziling Huang and Peng Zheng and Hong Liu and Xuebin Qin and Luc {Van Gool}},
+  title   = {Facial-Sketch Synthesis: A New Challenge},
+  journal = {Machine Intelligence Research},
+  volume  = {19},
+  number  = {4},
+  pages   = {257--287},
+  year    = {2022},
+  doi     = {10.1007/s11633-022-1349-9}
+}
+
+@inproceedings{ronneberger2015unet,
+  author    = {Olaf Ronneberger and Philipp Fischer and Thomas Brox},
+  title     = {{U-Net}: Convolutional Networks for Biomedical Image Segmentation},
+  booktitle = {Medical Image Computing and Computer-Assisted Intervention -- MICCAI 2015},
+  series    = {Lecture Notes in Computer Science},
+  pages     = {234--241},
+  publisher = {Springer},
+  year      = {2015},
+  doi       = {10.1007/978-3-319-24574-4_28}
+}
+
+@inproceedings{goodfellow2014generative,
+  author    = {Ian J. Goodfellow and Jean Pouget-Abadie and Mehdi Mirza and Bing Xu and David Warde-Farley and Sherjil Ozair and Aaron Courville and Yoshua Bengio},
+  title     = {Generative Adversarial Nets},
+  booktitle = {Advances in Neural Information Processing Systems 27 (NIPS 2014)},
+  year      = {2014}
+}

@@ -1,0 +1,38 @@
+% Task 2: classifier followed by hard routing (src/models/hard_router.py).
+% Included from main.tex with \input{figures/tikz/task2_hard_routing}.
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    blk/.style={draw, rounded corners=1pt, minimum height=0.8cm, minimum width=1.6cm,
+                align=center, font=\scriptsize},
+    io/.style={blk, fill=gray!10},
+    cls/.style={blk, fill=blue!10},
+    exp/.style={blk, fill=green!12},
+    idn/.style={blk, fill=yellow!20},
+    arr/.style={-{Stealth[length=1.8mm]}, thick}
+  ]
+  \node[io]  (inp)  at (0,0)   {Input $\tilde{x}$\\$3\times128^2$};
+  \node[cls] (c)   at (2.3,0) {Classifier $C$\\4 conv blocks\\GAP + FC};
+  \node[cls] (r)   at (4.6,0) {$p=\mathrm{softmax}$\\$r=\arg\max_k p_k$};
+
+  \node[idn] (b0) at (7.4,2.1)  {Identity bypass};
+  \node[exp] (b1) at (7.4,0.7)  {$A_{\mathrm{salt}}$};
+  \node[exp] (b2) at (7.4,-0.7) {$A_{\mathrm{blur}}$};
+  \node[exp] (b3) at (7.4,-2.1) {$A_{\mathrm{occlusion}}$};
+
+  \node[io]  (outp) at (10.0,0) {Restored\\$\hat{x}$};
+
+  \draw[arr] (inp) -- (c);
+  \draw[arr] (c) -- node[above, font=\tiny] {logits} (r);
+  \draw[arr] (r.east) -- node[above, sloped, font=\tiny] {$r$=clean} (b0.west);
+  \draw[arr] (r.east) -- node[above, sloped, font=\tiny] {$r$=salt} (b1.west);
+  \draw[arr] (r.east) -- node[below, sloped, font=\tiny] {$r$=blur} (b2.west);
+  \draw[arr] (r.east) -- node[below, sloped, font=\tiny] {$r$=occl.} (b3.west);
+  \draw[arr] (b0.east) -- (outp.west);
+  \draw[arr] (b1.east) -- (outp.west);
+  \draw[arr] (b2.east) -- (outp.west);
+  \draw[arr] (b3.east) -- (outp.west);
+
+  \node[font=\tiny, align=center] at (4.6,-2.1)
+    {Only the selected branch runs;\\the specialists receive $\tilde{x}$;\\oracle mode: $r$ from manifest};
+\end{tikzpicture}%
+}

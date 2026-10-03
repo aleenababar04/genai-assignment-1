@@ -1,0 +1,48 @@
+% Task 4: style-conditioned U-Net generator and PatchGAN discriminator
+% (src/models/cgan.py). c = base channels, d_s = style embedding size.
+% Included from main.tex with \input{figures/tikz/task4_cgan}.
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    blk/.style={draw, rounded corners=1pt, minimum height=0.9cm, minimum width=1.5cm,
+                align=center, font=\scriptsize},
+    io/.style={blk, fill=gray!10},
+    emb/.style={blk, fill=orange!25},
+    enc/.style={blk, fill=blue!10},
+    dec/.style={blk, fill=green!12},
+    dis/.style={blk, fill=red!10},
+    arr/.style={-{Stealth[length=1.8mm]}, thick}
+  ]
+  % ---------------- Generator ----------------
+  \node[font=\small\bfseries, anchor=west] at (-0.8,1.6) {Generator $G(x,s)$};
+  \node[io]  (x)   at (0,0.6)   {Photo $x$\\$3\times128^2$};
+  \node[emb] (eg)  at (0,-0.8)  {$E_G(s)$\\$d_s$, broadcast};
+  \node[enc] (gen) at (2.4,0)   {Encoder\\7$\times$ conv $4{\times}4$ s2\\$128^2\rightarrow1^2$};
+  \node[emb] (bn)  at (4.9,0)   {Bottleneck\\$8c\times1^2$\\$\oplus\,E_G(s)$};
+  \node[dec] (gde) at (7.4,0)   {Decoder\\7$\times$ ConvT $4{\times}4$ s2\\dropout (3 inner)};
+  \node[io]  (yh)  at (9.8,0)   {$\tanh$\\$\hat{y}$: $3\times128^2$};
+
+  \draw[arr] (x.east) -- (gen.west);
+  \draw[arr] (eg.east) -- node[below, font=\tiny, sloped] {concat} (gen.west);
+  \draw[arr] (gen) -- (bn);
+  \draw[arr] (bn) -- (gde);
+  \draw[arr] (gde) -- (yh);
+  \draw[arr, dashed] (gen.north) .. controls (3.6,1.3) and (6.2,1.3) .. node[above, font=\tiny] {U-Net skips $d_1$--$d_6$} (gde.north);
+  \draw[arr, orange!70!black] (eg.south) .. controls (1.5,-1.9) and (4.9,-1.9) .. (bn.south);
+
+  % ---------------- Discriminator ----------------
+  \node[font=\small\bfseries, anchor=west] at (-0.8,-2.6) {PatchGAN discriminator $D(x,y,s)$};
+  \node[io]  (dx)  at (0,-3.6)  {$x$ $\oplus$ ($y$ or $\hat{y}$)\\$\oplus\,E_D(s)$ map};
+  \node[dis] (c1)  at (2.4,-3.6) {C64 s2\\$64^2$};
+  \node[dis] (c2)  at (4.2,-3.6) {C128 s2\\$32^2$};
+  \node[dis] (c3)  at (6.0,-3.6) {C256 s2\\$16^2$};
+  \node[dis] (c4)  at (7.8,-3.6) {C512 s1\\$15^2$};
+  \node[io]  (lg)  at (9.8,-3.6) {Logits\\$1\times14^2$};
+  \draw[arr] (dx) -- (c1);
+  \draw[arr] (c1) -- (c2);
+  \draw[arr] (c2) -- (c3);
+  \draw[arr] (c3) -- (c4);
+  \draw[arr] (c4) -- node[above, font=\tiny] {conv s1} (lg);
+  \node[font=\tiny, align=center] at (5.1,-4.6)
+    {each logit sees a $70\times70$ patch; $E_D$ is separate from $E_G$};
+\end{tikzpicture}%
+}

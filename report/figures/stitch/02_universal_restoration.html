@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RestoreLab - Universal Restoration Workspace</title>
+<!-- Material Symbols Outlined Font -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter & JetBrains Mono Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-fixed-dim": "#fbabff",
+            "error-container": "#ffdad6",
+            "surface-bright": "#faf8ff",
+            "on-surface": "#0F172A",
+            "background": "#F8FAFC",
+            "inverse-primary": "#c3c0ff",
+            "on-surface-variant": "#64748B",
+            "tertiary-container": "#a500bd",
+            "on-primary-fixed-variant": "#3323cc",
+            "primary": "#4F46E5",
+            "on-secondary-fixed": "#001f26",
+            "on-tertiary-container": "#ffcafe",
+            "tertiary": "#7f0091",
+            "on-tertiary-fixed-variant": "#7c008e",
+            "surface-dim": "#d2d9f4",
+            "secondary": "#00687a",
+            "tertiary-fixed": "#ffd6fd",
+            "secondary-fixed": "#acedff",
+            "on-primary": "#ffffff",
+            "outline-variant": "#E2E8F0",
+            "on-primary-fixed": "#0f0069",
+            "outline": "#CBD5E1",
+            "on-primary-container": "#dad7ff",
+            "surface-container-low": "#FFFFFF",
+            "surface-tint": "#4F46E5",
+            "secondary-fixed-dim": "#4cd7f6",
+            "on-error": "#ffffff",
+            "surface-variant": "#F1F5F9",
+            "inverse-surface": "#283044",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "secondary-container": "#57dffe",
+            "error": "#ba1a1a",
+            "primary-fixed": "#e2dfff",
+            "primary-container": "#4F46E5",
+            "inverse-on-surface": "#eef0ff",
+            "surface-container-highest": "#E2E8F0",
+            "surface-container-lowest": "#FFFFFF",
+            "on-background": "#0F172A",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#e2e7ff",
+            "surface": "#F8FAFC",
+            "primary-fixed-dim": "#c3c0ff",
+            "on-secondary-container": "#006172",
+            "surface-container": "#eaedff",
+            "on-tertiary-fixed": "#36003e",
+            "on-tertiary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "margin-panel": "1rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2rem",
+            "gutter-compact": "0.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter", "sans-serif"],
+            "label-mono-sm": ["JetBrains Mono", "monospace"],
+            "label-mono-lg": ["JetBrains Mono", "monospace"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "headline-md": ["Inter", "sans-serif"],
+            "label-ui": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "headline-sm": ["Inter", "sans-serif"],
+            "label-mono-md": ["JetBrains Mono", "monospace"],
+            "body-sm": ["Inter", "sans-serif"],
+            "headline-xl": ["Inter", "sans-serif"]
+          },
+          "fontSize": {
+            "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-mono-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "400" }],
+            "label-mono-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-ui": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "body-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "600" }],
+            "label-mono-md": ["11px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden font-body-md text-body-md select-none">
+<!-- Application Shell Wrapper -->
+<div class="flex flex-col h-screen w-screen overflow-hidden">
+<!-- Top Navigation Bar (Shared Component: TopNavBar) -->
+<header class="w-full h-14 flex items-center justify-between px-6 bg-surface-container-lowest border-b border-outline-variant z-40 shrink-0 shadow-sm">
+<div class="flex items-center gap-8">
+<!-- Brand Logo / Product Name -->
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">csv</span>
+</div>
+<div class="flex items-baseline gap-1.5">
+<span class="text-headline-sm font-headline-sm font-bold tracking-tight text-on-surface">RestoreLab</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant font-medium">v2.4.0</span>
+</div>
+</div>
+<!-- Global Navigation Links -->
+<nav class="hidden md:flex items-center gap-6 h-14">
+<!-- Studio: Active tab according to context -->
+<a class="border-b-2 border-primary text-primary font-semibold py-4 text-body-md font-body-md flex items-center gap-1.5" href="#">
+            Studio
+          </a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors text-body-md font-body-md flex items-center gap-1.5" href="#">
+            Pipelines
+          </a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors text-body-md font-body-md flex items-center gap-1.5" href="#">
+            Evaluation
+          </a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors text-body-md font-body-md flex items-center gap-1.5" href="#">
+            Datasets
+          </a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors text-body-md font-body-md flex items-center gap-1.5" href="#">
+            Design System
+          </a>
+</nav>
+</div>
+<!-- Trailing Action Tools & Profile -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 border-r border-outline-variant pr-3">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors" title="Console Terminal">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors" title="Calibration &amp; Tuning">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors" title="Documentation Help">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+</button>
+</div>
+<button class="px-3 py-1.5 rounded-lg text-body-sm font-body-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors">
+          Docs
+        </button>
+<button class="px-3.5 py-1.5 rounded-lg text-body-sm font-body-sm font-semibold text-on-primary bg-primary hover:bg-opacity-95 active:translate-y-0.5 transition-all shadow-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+          Export Config
+        </button>
+<div class="pl-2 flex items-center">
+<div class="w-8 h-8 rounded-full border border-outline-variant overflow-hidden ring-2 ring-primary/10">
+<img class="w-full h-full object-cover" data-alt="High quality professional headshot of a female lead biometrics researcher in a clean studio lighting setting with sleek technical background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDklACFNqoIcRxgiF4VkFePR2c36TYs1GECzb_NHIXDBhB4_Tzprd-jLEqVbGPakcwEXHffRmoA6pVi1bXt2DVD-CHgSSRI3-WoF5YEGhz0bUOybQLUSMCcgfmPwfuIiJBzKVqGp1M48YEZ8s3paKQezKFS_qrP6MVy_OrCw8bDsy8q1_NDaDXeZb2yv3HAlWdtCcmiw99pR_hlgC6rUkzo8kct6SBF4zqIqF72HTqMy211-1eESbDWWA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- App Body: Sidebar + Main Content Layout -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Sidebar (264px wide) -->
+<aside class="w-[264px] h-full flex flex-col justify-between bg-surface-container-lowest border-r border-outline-variant shrink-0 z-30">
+<div class="p-4 flex flex-col gap-6">
+<!-- Navigation Section: ENGINE WORKSPACES -->
+<div class="flex flex-col gap-1.5">
+<div class="px-2 py-1 flex items-center justify-between">
+<span class="text-label-mono-sm font-label-mono-sm font-semibold tracking-wider text-on-surface-variant uppercase">Engine Workspaces</span>
+<span class="text-label-mono-sm font-label-mono-sm bg-surface-variant text-on-surface-variant px-1.5 py-0.5 rounded">v2.4</span>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- Universal Restoration (ACTIVE) -->
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F2F3FF] text-primary font-semibold border-l-2 border-primary transition-colors font-body-md text-body-md shadow-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+<span>Universal Restoration</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[18px]">alt_route</span>
+<span>Hard-Routed Restoration</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+<span>Soft Mixture-of-Experts</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[18px]">draw</span>
+<span>Face-to-Sketch Generator</span>
+</a>
+</nav>
+</div>
+<!-- Secondary Pipeline Cluster Info -->
+<div class="px-2 pt-2 border-t border-outline-variant flex flex-col gap-2">
+<span class="text-label-mono-sm font-label-mono-sm font-semibold tracking-wider text-on-surface-variant uppercase">Model Topology</span>
+<div class="p-2.5 rounded-lg bg-surface border border-outline-variant flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-label-mono-sm font-label-mono-sm">
+<span class="text-on-surface-variant">Arch:</span>
+<span class="font-semibold text-on-surface">U-Net Dense-AE</span>
+</div>
+<div class="flex items-center justify-between text-label-mono-sm font-label-mono-sm">
+<span class="text-on-surface-variant">Latent Dims:</span>
+<span class="font-semibold text-on-surface">128 × 128 × 3</span>
+</div>
+<div class="flex items-center justify-between text-label-mono-sm font-label-mono-sm">
+<span class="text-on-surface-variant">Precision:</span>
+<span class="font-semibold text-primary">FP16 CUDA</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pinned Bottom System Status Card -->
+<div class="p-4 border-t border-outline-variant bg-surface-container-lowest">
+<div class="p-3 bg-[#F8FAFC] border border-outline-variant rounded-xl flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-[#16A34A]"></span>
+</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Backend online</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">dns</span>
+</div>
+<div class="flex flex-col gap-1 text-label-mono-sm font-label-mono-sm pt-1 border-t border-outline-variant">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">ONNX models:</span>
+<span class="font-semibold text-on-surface">4 of 4 loaded</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Last inference:</span>
+<span class="font-semibold text-primary">38 ms</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace Canvas Area -->
+<main class="flex-1 flex flex-col overflow-y-auto custom-scroll bg-background p-6">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-outline-variant gap-4">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-3">
+<h1 class="text-headline-lg font-headline-lg font-semibold text-on-surface">Universal Restoration</h1>
+<!-- Category badge: ALL CORRUPTIONS -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm font-semibold bg-[#EEF2FF] text-primary border border-primary/20 uppercase tracking-wide">
+<span class="material-symbols-outlined text-[13px]">layers</span>
+                Pipeline 01: All Corruptions
+              </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              One unified autoencoder network trained to resolve impulse noise, gaussian blur, and synthetic occlusions simultaneously.
+            </p>
+</div>
+<!-- Quick badges on right -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant text-label-mono-md font-label-mono-md text-on-surface shadow-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">aspect_ratio</span>
+<span>Resolution: <strong>128x128</strong></span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant text-label-mono-md font-label-mono-md text-on-surface shadow-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">speed</span>
+<span>FP16 TensorRT</span>
+</div>
+</div>
+</div>
+<!-- Two-Column Interactive Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Column 1: Input Configuration (Width approx 340px) -->
+<div class="lg:col-span-4 xl:col-span-4 flex flex-col gap-5 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-xs">
+<div class="flex items-center justify-between border-b border-outline-variant pb-3">
+<div>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Input Configuration</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Upload or parameterize source tensor</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">input</span>
+</div>
+<!-- Dashed Dropzone -->
+<div class="border-2 border-dashed border-outline rounded-xl p-5 text-center bg-[#F8FAFC] hover:border-primary transition-all cursor-pointer group flex flex-col items-center justify-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest border border-outline-variant flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-xs">
+<span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface group-hover:text-primary transition-colors">Drop an image here or browse</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">PNG or JPG (strictly 128x128)</span>
+</div>
+</div>
+<!-- Section: Or pick a sample -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="text-label-ui font-label-ui uppercase tracking-wider text-on-surface-variant font-semibold">Or pick a sample</label>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">CelebA-HQ 128px</span>
+</div>
+<!-- Row of 6 Mini Thumbnails -->
+<div class="grid grid-cols-6 gap-2">
+<!-- Thumbnail 1 (Active) -->
+<button class="relative aspect-square rounded-lg border-2 border-primary ring-2 ring-primary/20 overflow-hidden shadow-xs group focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro calibrated portrait 128x128 face image of an analytical subject with forensic lighting and neutral expression for biometric testing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjClzLFvg2Zvk_Fyo-yGehuFt9HFMYxOQTtCJu0BScFKGpeBn4FQZMhyQw5QbdFET9RX5pWP5Hyattu_1wXbxjuXfIi5rL_kJrzvzyR292zdXbYyMaHj9kYLP7X4MDy9MVsJo7q5MuLFpofqiHHldjB0du11SKzT5SkaBHWwthNiPcLIS78urRrUXJzviAT87YSQDMxtlIIyETxcn47W6dRCSZLPROLD_pU8bXSJsGFauikZ3RIn_xOA"/>
+<div class="absolute inset-0 bg-primary/10"></div>
+</button>
+<!-- Thumbnail 2 -->
+<button class="relative aspect-square rounded-lg border border-outline-variant hover:border-outline overflow-hidden transition-all focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro calibrated biometric face portrait photograph of a female subject, centered composition with sharp lighting, 128x128 aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaWEh8JXiZxgX32ZFO6o1a-Cb9WX_1bgBgjunK2JFwszOqDkvHjK7f9VN78MvuoL6I0l-tg-qdQ4pzJAASHrfM8IbBjfQEgOzSjEQkrAjSry2q5KJaj2BBz2CvDtxFLq1cA-Ibvotv_QXtdSJKYK3KLGvBsYqY5ZDgWOVP2aYHA407N3dZin8AIddZqsUnOHMUjoPkJ0nJ3qffRJtR54uW0UiPIQwvxqw73bZVbkre7HwioUVY2VHVVg"/>
+</button>
+<!-- Thumbnail 3 -->
+<button class="relative aspect-square rounded-lg border border-outline-variant hover:border-outline overflow-hidden transition-all focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro biometric human face portrait testing asset, clean laboratory lighting, forensic clarity, standard evaluation database pose." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAySnzJn3D5D3uDj_lZ6yVRYuyKFrh3qgiCo0S1v8gqs7pOvm85tcFK8DZsyzbLscWixWpiiA3IR_sUPPfc8mQM-eO5Z-xzyrJVCoKKrGqY1qWbmynOqpUiHOj8EO3utX0K9sCG3BD3cLmonFSfOX81eyLJo8PsLrTiZe1N1y-3v3GXwXjlHzwbLgqx3TcONnwF1H76nJT0SoiKgf-6UArZlBoL0yhuHlkEI6sihXgCbLvOoxpb8alohA"/>
+</button>
+<!-- Thumbnail 4 -->
+<button class="relative aspect-square rounded-lg border border-outline-variant hover:border-outline overflow-hidden transition-all focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro scale facial portrait photo for high-accuracy computational imaging testing, bright studio lighting, neutral face angle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6yTPJjXTMPhuZDEGXTTnCiFysUvZlJP0U0W3DFVINbkllwE4ikLaRim3fwRA9XHkQ43qBUal90dPh88PDI552D8Nk5yvDBN1C4YOsBjE4WUTHNLPnswlKjoX8KqEfmEis5AVuzszyrLianyyDn2qGQR_f8z29kuQW8hZrQFmaPDSluDoeAe1HzO5HozqSnF-e1vBHGK420hgRdjlTw3S-49WEghISos2tleB-8PJ_EBmkxtDIupXenQ"/>
+</button>
+<!-- Thumbnail 5 -->
+<button class="relative aspect-square rounded-lg border border-outline-variant hover:border-outline overflow-hidden transition-all focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro reference facial photo of a male individual for computer vision benchmarking, clean backdrop, standard forensic laboratory capture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN5Hy55E3EMlmAbUaL7z5vJ8FDDQmMfXazQrPgOhmdxCKn26g3ZkewFuZWCK4OrvLOrzAZvXCK5q6CuhhXYchwfWl3LmYpngkZNyyKB0TcAP1dDbLHUTv-44RlYgRbaNxP6laaTjqyGcXNUwMOFE69OaoMmObF_sw-gwjOlSYl_vYM7FA0fVtBrLbwL_rJ_ffqMkl3C7ZgUOSd25-CsphflnFzCObUdDbZ1rKdNiv4pBZIHrhvMJuG0g"/>
+</button>
+<!-- Thumbnail 6 -->
+<button class="relative aspect-square rounded-lg border border-outline-variant hover:border-outline overflow-hidden transition-all focus:outline-none">
+<img class="w-full h-full object-cover pixelated" data-alt="Micro resolution portrait photograph of a neutral subject under calibrated laboratory illuminance for autoencoder validation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpWiZaHz93cNLd56QfH1bCjDX6TcQ9DoozBQpTotTqvZUtgI2Vay-PWmNM8zfXgtzu8Q29PuMbnrDe3ASp7l6ZKILixcZILcbQb22NdTshdd-SaEG5W40o6lwc1g2RJQ2ozvCRk5xRUKn5gj37yIOXfaYeZji68FkDZvIxbPmfpF7qqYX_uWaU7OJ6E6XzeIDkpzbg7BGJd_QmcaXgejPABxmata8ZtLC1xiHqcyl63HVYsqJBwInCDA"/>
+</button>
+</div>
+</div>
+<!-- Section: Corruption Type -->
+<div class="flex flex-col gap-2 pt-2 border-t border-outline-variant">
+<label class="text-label-ui font-label-ui uppercase tracking-wider text-on-surface-variant font-semibold">Corruption Type</label>
+<!-- 2x2 Grid Options -->
+<div class="grid grid-cols-2 gap-2">
+<!-- Option 1: None -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-left transition-colors">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981] shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface leading-tight">None</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">Ground Truth</span>
+</div>
+</button>
+<!-- Option 2: Salt-and-pepper noise (SELECTED) -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border-2 border-primary bg-[#F2F3FF] text-left relative shadow-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B] shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm font-semibold text-primary leading-tight">Salt &amp; Pepper</span>
+<span class="text-label-mono-sm font-label-mono-sm text-primary/80">Impulsive</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[16px] absolute top-1.5 right-1.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Option 3: Gaussian blur -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-left transition-colors">
+<span class="w-2.5 h-2.5 rounded-full bg-[#06B6D4] shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface leading-tight">Gaussian Blur</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">σ = 2.4 kernel</span>
+</div>
+</button>
+<!-- Option 4: Rectangular occlusion -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-left transition-colors">
+<span class="w-2.5 h-2.5 rounded-full bg-[#D946EF] shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface leading-tight">Occlusion</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">Synthetic box</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Section: Severity -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<label class="text-label-ui font-label-ui uppercase tracking-wider text-on-surface-variant font-semibold">Severity</label>
+<span class="text-label-mono-sm font-label-mono-sm font-medium text-primary">p = 0.08 intensity</span>
+</div>
+<!-- Segmented Control -->
+<div class="grid grid-cols-3 p-1 bg-[#F1F5F9] rounded-lg border border-outline-variant text-center">
+<button class="py-1.5 text-body-sm font-body-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors rounded">
+                  Low
+                </button>
+<button class="py-1.5 text-body-sm font-body-sm font-semibold text-on-surface bg-white rounded shadow-xs">
+                  Medium
+                </button>
+<button class="py-1.5 text-body-sm font-body-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors rounded">
+                  High
+                </button>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full mt-2 h-10 rounded-lg bg-primary text-on-primary hover:bg-opacity-95 font-body-md font-semibold active:translate-y-0.5 transition-all shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+<span>Restore Tensor</span>
+</button>
+</div>
+<!-- Column 2: Result Inspection (Flex-1) -->
+<div class="lg:col-span-8 xl:col-span-8 flex flex-col gap-5 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-xs">
+<!-- Card Header & Live Quality Badges -->
+<div class="flex flex-wrap items-center justify-between pb-3 border-b border-outline-variant gap-3">
+<div>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Restoration Inspection</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Split-view 128×128 pixel tensor comparison</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#ECFDF5] border border-[#A7F3D0] text-[#047857] text-label-mono-md font-label-mono-md">
+<span class="material-symbols-outlined text-[15px]">trending_up</span>
+<span>PSNR: <strong>+8.4 dB</strong></span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#EEF2FF] border border-primary/20 text-primary text-label-mono-md font-label-mono-md">
+<span class="material-symbols-outlined text-[15px]">verified</span>
+<span>SSIM: <strong>0.924</strong></span>
+</div>
+</div>
+</div>
+<!-- Side-by-side Image Inspection Panels -->
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-4 bg-[#F8FAFC] border border-outline-variant rounded-xl p-4">
+<!-- Panel 1: Input Corrupted Tensor -->
+<div class="flex flex-col items-center gap-2.5">
+<div class="flex items-center justify-between w-[288px] px-1">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface">Input Corrupted</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-label-mono-sm font-label-mono-sm font-medium bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A]">
+                    Salt &amp; Pepper
+                  </span>
+</div>
+<!-- 288x288 Viewport for 128x128 Scaled Image -->
+<div class="relative w-[288px] h-[288px] rounded-xl overflow-hidden border border-outline shadow-sm bg-white">
+<img class="w-full h-full object-cover pixelated" data-alt="Close-up forensic biometric portrait face image of an analytical subject deliberately degraded with impulsive salt and pepper digital noise artifacts for laboratory testing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkOb6j1tyHtoQ3Iz78uLhvBtZRSy7i4kPqrdVF5Qn54Fju3qWQqkQJZ-UOmm15RQ0Uq5Lv3XEgbXSpTGLtan_FkKVgbdtf-rHAhkiNN70BFLDfOZN9Kp-e0E_1vUSVu7kmn6sKk3lGZHtimIf3_LHOC5zPLypsff8PQOwoiR9PAGFTZ3_P8tG6BTE_UH7Geo50eToC771sbgLsiWnTqLbnw5oMfi9hj7JxUxHRvIybs4GEk_4-dKWKQQ"/>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white text-label-mono-sm font-label-mono-sm">
+                    128 × 128 px
+                  </div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-white/90 border border-outline-variant text-on-surface text-label-mono-sm font-label-mono-sm">
+                    SRC
+                  </div>
+</div>
+<div class="flex items-center justify-between w-[288px] text-label-mono-sm font-label-mono-sm text-on-surface-variant px-1">
+<span>MSE: 0.0412</span>
+<span>SNR: 18.2 dB</span>
+</div>
+</div>
+<!-- Transfer Transformation Glyph -->
+<div class="flex flex-col items-center justify-center gap-1 text-primary">
+<div class="w-9 h-9 rounded-full bg-[#EEF2FF] border border-primary/30 flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm font-semibold uppercase text-primary tracking-wide">Restore</span>
+</div>
+<!-- Panel 2: Restored Clean Tensor -->
+<div class="flex flex-col items-center gap-2.5">
+<div class="flex items-center justify-between w-[288px] px-1">
+<span class="text-body-sm font-body-sm font-semibold text-on-surface">Restored Output</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-label-mono-sm font-label-mono-sm font-medium bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]">
+                    Clean (Autoencoder)
+                  </span>
+</div>
+<!-- 288x288 Viewport for Restored Image -->
+<div class="relative w-[288px] h-[288px] rounded-xl overflow-hidden border-2 border-primary shadow-sm bg-white">
+<img class="w-full h-full object-cover pixelated" data-alt="High precision restored clean biometric portrait face image with forensic crispness, impulse noise removed via autoencoder reconstruction." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFzzTAFlDS9nkXyD9NOucDg2S1vv6wECRsMIF7bb7jymvX93Hp4GUMrD1mv3cmO34orCkExfsX8VjxP00w8incpFi1hgDSBIQ0pfzNtBrQkGdt1kVO_y7cCAq2sZ9MRyk9qdpwAbWT-77pcvamxzV_IR-PIMO-fCw88z0aHgoDCaBE_k-9aiaSbE0JuyAZ79QyAjoHKEJqb8t1fO4d4VVLIGs8nVLXAvDOOAPBb4ohvAisOdO-cyQbIg"/>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white text-label-mono-sm font-label-mono-sm">
+                    128 × 128 px
+                  </div>
+<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-[#ECFDF5] border border-[#A7F3D0] text-[#047857] text-label-mono-sm font-label-mono-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check</span>
+                    SYNTH
+                  </div>
+</div>
+<div class="flex items-center justify-between w-[288px] text-label-mono-sm font-label-mono-sm text-on-surface-variant px-1">
+<span>MSE: 0.0031</span>
+<span>PSNR: 32.8 dB</span>
+</div>
+</div>
+</div>
+<!-- Inspection Metadata & Canvas Zoom Controls -->
+<div class="flex items-center justify-between px-3 py-2 bg-surface rounded-lg border border-outline-variant text-label-mono-sm font-label-mono-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="flex items-center gap-1 text-on-surface font-medium">
+<span class="material-symbols-outlined text-[15px] text-primary">view_in_ar</span>
+                  128 x 128 Latent Scale (2.25x viewport zoom)
+                </span>
+<span>•</span>
+<span>Interpolation: Nearest Neighbor</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">grid_4x4</span>
+                  Grid
+                </button>
+<button class="px-2 py-1 rounded hover:bg-surface-variant text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">zoom_in</span>
+                  100%
+                </button>
+</div>
+</div>
+<!-- Active Corruption Settings Chips Row -->
+<div class="flex flex-wrap items-center gap-2 pt-2 border-t border-outline-variant">
+<span class="text-label-ui font-label-ui uppercase tracking-wider text-on-surface-variant font-semibold pr-1">Parameters:</span>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-mono-sm font-label-mono-sm bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B]"></span>
+                Type: Salt-and-pepper noise
+              </div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-mono-sm font-label-mono-sm bg-surface-variant text-on-surface border border-outline-variant">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">tune</span>
+                Severity: Medium
+              </div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-mono-sm font-label-mono-sm bg-surface-variant text-on-surface border border-outline-variant">
+<span class="text-on-surface-variant">Noise probability:</span>
+<span class="font-semibold text-primary">0.08</span>
+</div>
+</div>
+<!-- Bottom Action Bar & Telemetry Inside Result Card -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+<!-- Stat Tile 1: Inference Time -->
+<div class="p-3 bg-[#F8FAFC] border border-outline-variant rounded-lg flex flex-col justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant uppercase">Inference Time</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-headline-md font-headline-md font-semibold text-primary font-label-mono-lg">38 ms</span>
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">/ frame</span>
+</div>
+</div>
+<!-- Stat Tile 2: Memory & Model -->
+<div class="p-3 bg-[#F8FAFC] border border-outline-variant rounded-lg flex flex-col justify-between">
+<span class="text-label-mono-sm font-label-mono-sm text-on-surface-variant uppercase">Resource Load</span>
+<div class="flex items-center justify-between mt-1 text-label-mono-md font-label-mono-md">
+<span class="text-on-surface font-semibold">1.2 GB VRAM</span>
+<span class="text-on-surface-variant">UNet-AE-v2</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="flex-1 h-full py-2.5 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-on-surface text-body-sm font-body-sm font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-xs">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Download</span>
+</button>
+<button class="h-full py-2.5 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm transition-colors flex items-center justify-center shadow-xs" title="Compare Slider">
+<span class="material-symbols-outlined text-[18px]">compare</span>
+</button>
+<button class="h-full py-2.5 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-[#F8FAFC] text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm transition-colors flex items-center justify-center shadow-xs" title="Copy Latent Vector">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Bottom Status Area -->
+<footer class="mt-8 pt-4 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between text-label-mono-sm font-label-mono-sm text-on-surface-variant gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">science</span>
+<span>RestoreLab Computational Imaging Laboratory — Biometric Synthesis Division</span>
+</div>
+<div class="flex items-center gap-4">
+<span>CUDA v12.2</span>
+<span>•</span>
+<span>PyTorch 2.3.0 Engine</span>
+<span>•</span>
+<span class="text-primary font-medium">Session Calibrated</span>
+</div>
+</footer>
+</main>
+</div>
+</div>
+</body></html>
