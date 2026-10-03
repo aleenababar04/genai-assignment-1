@@ -1,0 +1,11 @@
+condition,severity,count,accuracy,most_common_wrong
+clean,none,3669,0.9896429544835105,blur
+salt_pepper,low,3669,1.0,
+salt_pepper,medium,3669,1.0,
+salt_pepper,high,3669,1.0,
+blur,low,3669,0.9994548923412374,clean
+blur,medium,3669,1.0,
+blur,high,3669,1.0,
+occlusion,low,3669,0.9719269555737258,clean
+occlusion,medium,3669,1.0,
+occlusion,high,3669,1.0,

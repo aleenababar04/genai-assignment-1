@@ -1,0 +1,9 @@
+{
+ "model": "task2_specialist_blur",
+ "opset": 17,
+ "tolerance": 0.0001,
+ "size_mb": 29.81,
+ "max_abs_diff": {
+  "output": 1.0728836059570312e-06
+ }
+}

@@ -1,0 +1,5 @@
+lr: 0.0003574712922600243
+batch_size: 32
+channels: small
+dropout: 0.4330880728874676
+weight_decay: 6.358358856676247e-05

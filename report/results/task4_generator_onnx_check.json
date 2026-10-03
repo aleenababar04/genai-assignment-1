@@ -1,0 +1,9 @@
+{
+ "model": "task4_generator",
+ "opset": 17,
+ "tolerance": 0.0001,
+ "size_mb": 168.52,
+ "max_abs_diff": {
+  "sketch": 1.2516975402832031e-06
+ }
+}

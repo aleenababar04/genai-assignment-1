@@ -1,0 +1,9 @@
+{
+ "model": "task2_classifier",
+ "opset": 17,
+ "tolerance": 0.0001,
+ "size_mb": 1.18,
+ "max_abs_diff": {
+  "logits": 5.7220458984375e-06
+ }
+}

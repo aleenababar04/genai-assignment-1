@@ -1,0 +1,5 @@
+lr: 0.000471705203762518
+batch_size: 32
+latent_channels: 64
+base_channels: 64
+alpha: 0.8637788066524075
