@@ -35,22 +35,23 @@ from src.utils.config import PROJECT_ROOT, load_config
 def find_root(fs2k_dir) -> Path:
     """Return the folder that contains anno_train.json.
 
-    This is either fs2k_dir itself or one of its sub-folders (the official
-    zip file sometimes unpacks into an extra folder, e.g. data/FS2K/FS2K/).
+    This is either fs2k_dir itself or a folder below it: unzipping the
+    official file can add one or more extra levels (e.g. data/FS2K/FS2K/FS2K/).
     """
     fs2k_dir = Path(fs2k_dir)
     if (fs2k_dir / "anno_train.json").exists():
         return fs2k_dir
 
-    # Look one level down.
+    # Look further down, preferring the shallowest match.
     if fs2k_dir.is_dir():
-        for sub_dir in sorted(fs2k_dir.iterdir()):
-            if (sub_dir / "anno_train.json").exists():
-                print(f"Found the FS2K files one folder down, in {sub_dir}")
-                return sub_dir
+        matches = sorted(fs2k_dir.rglob("anno_train.json"), key=lambda p: (len(p.parts), str(p)))
+        if matches:
+            root = matches[0].parent
+            print(f"Found the FS2K files in a sub-folder: {root}")
+            return root
 
     raise FileNotFoundError(
-        f"Could not find anno_train.json in {fs2k_dir} or in a folder directly "
+        f"Could not find anno_train.json in {fs2k_dir} or in any folder "
         "inside it. Download FS2K (https://github.com/DengPingFan/FS2K) and "
         f"unpack it so that {fs2k_dir} contains photo/, sketch/, "
         "anno_train.json and anno_test.json."
