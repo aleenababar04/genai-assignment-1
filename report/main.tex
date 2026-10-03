@@ -322,12 +322,12 @@ validation, and the split is saved to \file{manifests/fs2k_split.json}.
 An unstratified split was rejected because it could leave one style with
 very few validation images. Each photograph is mapped to its sketch by the
 naming rule of the dataset's own tooling, and both are converted to RGB and
-resized directly to $128\times128$ (bicubic). Sketches are currently stored
-with three channels.
-% TODO(results): confirm sketch channel count from the prepare_fs2k output.
-\TODO{Confirm from the output of \file{python -m src.data.prepare_fs2k}
-how many sketches are greyscale and whether one output channel would
-suffice; report original image sizes.}
+resized directly to $128\times128$ (bicubic). The originals come in four
+sizes ($205\times292$, $223\times318$, $250\times250$ and $475\times340$);
+every photograph has a sketch of the same size. All 2,104 sketches are
+greyscale ($R=G=B$ everywhere); they are nevertheless kept as three-channel
+images, so the generator has three output channels that it learns to make
+equal, at a small cost in parameters.
 
 Training augmentation follows pix2pix~\cite{isola2017image}: a random
 horizontal flip, a resize to $143\times143$ and a random $128\times128$
@@ -335,8 +335,9 @@ crop. Independent augmentation of photo and sketch would destroy their
 pixel correspondence, so both images are stacked into one tensor and
 transformed with a single draw of the random parameters; a unit test checks
 that a pair whose sketch is an exact copy of the photo remains identical
-over 50 augmentations. Table~\ref{tab:fs2k_split} will list the per-style
-counts.
+over 50 augmentations. Table~\ref{tab:fs2k_split} lists the per-style
+counts. The official test split is strongly unbalanced: Style~3 has only
+46 test pairs.
 
 \begin{table}[t]
 \centering
@@ -347,16 +348,14 @@ counts.
 \toprule
 Style & Train & Validation & Test \\
 \midrule
-Style 1 & \na & \na & \na \\
-Style 2 & \na & \na & \na \\
-Style 3 & \na & \na & \na \\
+Style 1 & 303 & 54 & 619 \\
+Style 2 & 298 & 52 & 381 \\
+Style 3 & 298 & 53 & 46 \\
 \midrule
-Total   & \na & \na & \na \\
+Total   & 899 & 159 & 1046 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill per-style counts from manifests/fs2k_split.json.
-\TODO{Fill from \file{manifests/fs2k_split.json}.}
 \end{table}
 
 % =====================================================================
@@ -704,7 +703,7 @@ contains exactly 25\% of each class. Tests confirm exact counts of $B/4$ per
 class for batch sizes 4, 8 and 64 and over a full epoch.
 
 The classifier is trained with multiclass cross-entropy and
-AdamW~\cite{loshchilov2019decoupled} with a cosine schedule, for 40 epochs in
+AdamW~\cite{loshchilov2019decoupled} with a cosine schedule, for 25 epochs in
 the final run. The checkpoint is chosen by validation macro-F1, with ties
 broken by the lower validation cross-entropy.
 
@@ -714,8 +713,9 @@ manifest. On a perfectly balanced set accuracy would rank models almost
 identically, but macro-F1 is a required metric and penalises a model that
 sacrifices one class; validation cross-entropy is smoother but rewards
 confident probabilities rather than correct decisions, so it is only logged
-and used as the tie-breaker. TPE and a median pruner (five start-up trials,
-three warm-up epochs) run 25 trials of 8 epochs. Table~\ref{tab:task2_cls_space}
+and used as the tie-breaker. TPE and a median pruner (three start-up trials,
+two warm-up epochs) run 12 trials of 6 epochs; the budget was reduced from
+25 trials of 8 epochs to fit the available time (Section~\ref{sec:limitations}). Table~\ref{tab:task2_cls_space}
 gives the search space.
 
 \begin{table}[t]
@@ -727,16 +727,14 @@ gives the search space.
 \toprule
 Hyperparameter & Range (scale) & Selected \\
 \midrule
-Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & \na \\
-Batch size & \{32, 64, 128\} & \na \\
-Channel preset & \{small, medium, large\} & \na \\
-Dropout & 0--0.5 (linear) & \na \\
-Weight decay (AdamW) & $10^{-6}$--$10^{-3}$ (log) & \na \\
+Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & $3.6\times10^{-4}$ \\
+Batch size & \{32, 64, 128\} & 32 \\
+Channel preset & \{small, medium, large\} & small \\
+Dropout & 0--0.5 (linear) & 0.43 \\
+Weight decay (AdamW) & $10^{-6}$--$10^{-3}$ (log) & $6.4\times10^{-5}$ \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from configs/task2_classifier_best.yaml.
-\TODO{Fill from \file{configs/task2_classifier_best.yaml}.}
 \end{table}
 
 \subsection{Specialist autoencoders}
@@ -745,7 +743,7 @@ $A_{\mathrm{occlusion}}$ use the Task~1 architecture without dropout and
 the same clean targets. Each is trained only on its own corruption type
 (sampled at runtime from the training ranges) and validated only on the 736
 validation-manifest items of that type, with the loss of
-Eq.~\eqref{eq:rec_loss}, Adam and a cosine schedule (60 epochs in the final
+Eq.~\eqref{eq:rec_loss}, Adam and a cosine schedule (40 epochs in the final
 run). The parameters of the three are independent.
 
 Three separate searches would give the most tailored settings at three
@@ -756,7 +754,8 @@ by side (one epoch each in turn), and the trial's value is the mean of their
 fixed validation objectives (Eq.~\eqref{eq:val_obj}), which also allows
 per-epoch pruning on the mean. The best shared configuration is then used to
 train the three specialists independently, each with its own W\&B run and
-checkpoint. The study runs 20 trials of 8 epochs (Table~\ref{tab:task2_spec_space}).
+checkpoint. The study runs 10 trials of 5 epochs (reduced from 20 of 8 for
+time; Table~\ref{tab:task2_spec_space}).
 
 \begin{table}[t]
 \centering
@@ -768,16 +767,14 @@ Dropout is fixed at 0.}
 \toprule
 Hyperparameter & Range (scale) & Selected \\
 \midrule
-Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & \na \\
-Batch size & \{32, 64, 128\} & \na \\
-Bottleneck channels $C_z$ & \{16, 32, 64, 128\} & \na \\
-Base channels $c$ & \{32, 48, 64\} & \na \\
-L1 weight $\alpha$ & 0.5--0.95 (linear) & \na \\
+Learning rate & $10^{-4}$--$3\times10^{-3}$ (log) & $4.7\times10^{-4}$ \\
+Batch size & \{32, 64, 128\} & 32 \\
+Bottleneck channels $C_z$ & \{16, 32, 64, 128\} & 64 \\
+Base channels $c$ & \{32, 48, 64\} & 64 \\
+L1 weight $\alpha$ & 0.5--0.95 (linear) & 0.864 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from configs/task2_specialists_best.yaml.
-\TODO{Fill from \file{configs/task2_specialists_best.yaml}.}
 \end{table}
 
 \subsection{Hard routing and evaluation modes}
@@ -807,16 +804,28 @@ because the oracle output has the capped PSNR. The six misrouted images with
 the largest PSNR loss are shown.
 
 \subsection{Results}
-% TODO(results): Task 2 Optuna outcomes for both studies.
-\TODO{Report completed/pruned trials and the best trial of both Task 2
-studies (Table~\ref{tab:optuna_summary}) and interpret the
-selected configurations and the training curves (Fig.~\ref{fig:task2_curves}).}
+In the classifier study 3 of 12 trials completed and 9 were pruned; the
+best was trial~0 (validation macro-F1 0.9912), with the smallest channel
+preset (0.29\,M parameters) and strong dropout (0.43). The importances are
+spread over dropout (0.36), weight decay (0.33) and learning rate (0.30),
+while the channel preset hardly matters: detecting the corruption type is
+easy enough that the smallest network suffices. In the specialist study 3 of
+10 trials completed; the best (trial~2, mean objective 0.1395) uses
+$C_z=64$, $c=64$ and $\alpha=0.86$, and the learning rate (0.51) and $\alpha$
+(0.47) dominate the importances. With few completed trials the median pruner
+acted early and often, so these searches are coarse. The final classifier
+(Fig.~\ref{fig:task2_curves}) converges within about 10 epochs, with one
+transient drop in validation accuracy at epoch 6 while the learning rate was
+still high, and ends with nearly identical training and validation
+accuracy (about 0.995), i.e.\ without over-fitting.
 
 \begin{figure}[t]
 \centering
-\figOrTodo{figures/task2_curves.png}{\columnwidth}{Classifier training loss/accuracy and
-validation macro-F1/cross-entropy per epoch, and specialist validation objectives (export from W\&B groups task2-classifier and task2-specialists)}
-\caption{Task 2 training and validation curves.}
+\figOrTodo{figures/task2_classifier_curves.png}{\columnwidth}{Classifier curves}
+\figOrTodo{figures/task2_specialist_occlusion_curves.png}{\columnwidth}{Occlusion specialist curves}
+\caption{Task 2 training and validation curves: classifier (top) and the
+occlusion specialist (bottom; the other two specialists' curves are in
+\file{figures/task2\_specialist\_*\_curves.png}).}
 \label{fig:task2_curves}
 \end{figure}
 
@@ -829,7 +838,7 @@ validation macro-F1/cross-entropy per epoch, and specialist validation objective
 \toprule
  & Accuracy & Macro-P & Macro-R & Macro-F1 \\
 \midrule
-Test & \na & \na & \na & \na \\
+Test & 0.9961 & 0.9922 & 0.9950 & 0.9936 \\
 \bottomrule
 \end{tabular}
 \\[6pt]
@@ -837,15 +846,15 @@ Test & \na & \na & \na & \na \\
 \toprule
 Class & Precision & Recall & F1 \\
 \midrule
-Clean           & \na & \na & \na \\
-Salt-and-pepper & \na & \na & \na \\
-Blur            & \na & \na & \na \\
-Occlusion       & \na & \na & \na \\
+Clean           & 0.9724 & 0.9896 & 0.9810 \\
+Salt-and-pepper & 1.0000 & 1.0000 & 1.0000 \\
+Blur            & 0.9978 & 0.9998 & 0.9988 \\
+Occlusion       & 0.9985 & 0.9906 & 0.9946 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task2_classifier_per_class.csv (eval_task2 also prints the overall numbers).
-\TODO{Fill from \file{report/results/task2_classifier_per_class.csv}.}
+Macro scores average the four classes; the clean class has 3,669 test
+items, each corruption 11,007.
 \end{table}
 
 \begin{table}[t]
@@ -857,15 +866,13 @@ Occlusion       & \na & \na & \na \\
 \toprule
 Condition & none & low & medium & high \\
 \midrule
-Clean           & \na & --  & --  & --  \\
-Salt-and-pepper & --  & \na & \na & \na \\
-Blur            & --  & \na & \na & \na \\
-Occlusion       & --  & \na & \na & \na \\
+Clean           & 0.9896 & --  & --  & --  \\
+Salt-and-pepper & --  & 1.0000 & 1.0000 & 1.0000 \\
+Blur            & --  & 0.9995 & 1.0000 & 1.0000 \\
+Occlusion       & --  & 0.9719 & 1.0000 & 1.0000 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task2_classifier_by_severity.csv.
-\TODO{Fill from \file{report/results/task2_classifier_by_severity.csv}.}
 \end{table}
 
 \begin{figure}[t]
@@ -877,11 +884,17 @@ The validation matrix of the selected epoch is in
 \label{fig:task2_confusion}
 \end{figure}
 
-% TODO(results): interpret the classifier tables and confusion matrix.
-\TODO{Interpret Tables~\ref{tab:task2_cls_overall}--\ref{tab:task2_cls_severity}
-and Fig.~\ref{fig:task2_confusion}: which classes are confused and at which
-severities (the clean vs.\ low-blur pair was expected to be the hardest;
-confirm or refute).}
+The classifier is almost perfect (test accuracy 0.9961, macro-F1 0.9936;
+Tables~\ref{tab:task2_cls_overall}--\ref{tab:task2_cls_severity},
+Fig.~\ref{fig:task2_confusion}). Salt-and-pepper is never missed, and all
+medium and high severities are classified without error. We had expected
+clean vs.\ low blur to be the hardest pair; the data refute this, with only
+two low-blur images called clean. The hardest pair is instead
+\emph{low occlusion vs.\ clean}: 101 low-occlusion images (2.8\%) are called
+clean, and conversely 38 clean images are called blur (22) or occlusion
+(16). A single small black rectangle covers only about 10\% of the image and
+can resemble a naturally dark region, which is also why clean images with
+dark areas are sometimes called occluded.
 
 \begin{table}[t]
 \centering
@@ -895,25 +908,23 @@ confirm or refute).}
 \cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Cond. & Sev. & In PSNR & Oracle & Pred. & Oracle & Pred. \\
 \midrule
-Clean & --   & \na & \na & \na & \na & \na \\
-S\&P  & low  & \na & \na & \na & \na & \na \\
-S\&P  & med. & \na & \na & \na & \na & \na \\
-S\&P  & high & \na & \na & \na & \na & \na \\
-Blur  & low  & \na & \na & \na & \na & \na \\
-Blur  & med. & \na & \na & \na & \na & \na \\
-Blur  & high & \na & \na & \na & \na & \na \\
-Occl. & low  & \na & \na & \na & \na & \na \\
-Occl. & med. & \na & \na & \na & \na & \na \\
-Occl. & high & \na & \na & \na & \na & \na \\
+Clean & --   & $\infty$ & $\infty$ & 99.21 & 1.000 & 0.997 \\
+S\&P  & low  & 20.13 & 24.82 & 24.82 & 0.740 & 0.740 \\
+S\&P  & med. & 15.87 & 24.80 & 24.80 & 0.739 & 0.739 \\
+S\&P  & high & 13.14 & 24.72 & 24.72 & 0.735 & 0.735 \\
+Blur  & low  & 32.34 & 24.67 & 24.67 & 0.732 & 0.732 \\
+Blur  & med. & 26.77 & 24.81 & 24.81 & 0.731 & 0.731 \\
+Blur  & high & 24.35 & 24.62 & 24.62 & 0.713 & 0.713 \\
+Occl. & low  & 16.70 & 22.70 & 22.70 & 0.690 & 0.694 \\
+Occl. & med. & 13.22 & 21.50 & 21.50 & 0.657 & 0.657 \\
+Occl. & high & 10.74 & 19.99 & 19.99 & 0.606 & 0.606 \\
 \midrule
-Corr. & all & \na & \na & \na & \na & \na \\
-All       & all & \na & \na & \na & \na & \na \\
+Corr. & all & 19.25 & 23.63 & 23.63 & 0.705 & 0.705 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task2_oracle_test_metrics.csv and task2_predicted_test_metrics.csv.
-\TODO{Fill from \file{report/results/task2_oracle_test_metrics.csv} and
-\file{task2_predicted_test_metrics.csv}.}
+PSNR is capped at 100\,dB for identical images; the predicted clean value
+(99.21) is the capped mean, lowered by the 38 misrouted clean images.
 \end{table}
 
 \begin{figure}[t]
@@ -931,10 +942,19 @@ corrupted input, restored output, absolute error; row labels give the chosen exp
 \label{fig:task2_examples}
 \end{figure*}
 
-% TODO(results): interpret oracle vs. predicted.
-\TODO{Interpret Table~\ref{tab:task2_restoration}, Fig.~\ref{fig:task2_bars}
-and Fig.~\ref{fig:task2_examples}: the specialists' quality (oracle), the
-gap to predicted routing and where it arises, and the comparison with Task~1.}
+Because the classifier is so accurate, predicted routing is practically
+identical to oracle routing (Table~\ref{tab:task2_restoration}): the
+corrupted-input average is 23.63\,dB in both modes, and the only visible
+difference is on clean inputs. The main benefit of hard routing over Task~1
+is therefore the identity bypass: clean images, which Task~1 degraded to
+25.2\,dB, are now returned unchanged in 99\% of cases. On corrupted inputs,
+however, the specialists are \emph{not} better than the universal model
+(23.63 vs.\ 23.96\,dB; SSIM 0.705 vs.\ 0.758). The comparison is not
+controlled: the specialists were found by a smaller search and trained for
+40 rather than 80 epochs with half the bottleneck width ($C_z=64$ vs.\
+128). The result nevertheless shows that specialisation alone does not
+remove the bottleneck ceiling of about 25\,dB that limited Task~1, and the
+examples (Fig.~\ref{fig:task2_examples}) show the same smoothing.
 
 \subsection{Failure cases caused by misrouting}
 \begin{table}[t]
@@ -947,14 +967,17 @@ mean loss relative to oracle routing.}
 \toprule
 True class & Routed to & Count & PSNR loss & SSIM loss \\
 \midrule
-\na & \na & \na & \na & \na \\
-\na & \na & \na & \na & \na \\
-\na & \na & \na & \na & \na \\
+Clean & Blur & 22 & -- & 0.167 \\
+Clean & Occlusion & 16 & -- & 0.371 \\
+Blur & Identity & 2 & $-5.50$ & $-0.309$ \\
+Occlusion & Identity & 101 & $-0.15$ & $-0.174$ \\
+Occlusion & Blur & 2 & 0.06 & 0.049 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): one row per (true, routed_to) pair in report/results/task2_misrouting.csv.
-\TODO{One row per pair in \file{report/results/task2_misrouting.csv}.}
+Loss = oracle minus predicted (negative: the misrouted output scored
+better). PSNR loss is omitted for clean inputs because the oracle output has
+the capped PSNR.
 \end{table}
 
 \begin{figure*}[t]
@@ -965,15 +988,28 @@ with the largest PSNR loss relative to oracle routing.}
 \label{fig:task2_misrouted}
 \end{figure*}
 
-% TODO(results): discuss misrouting failures.
-\TODO{Discuss Table~\ref{tab:task2_misrouting} and Fig.~\ref{fig:task2_misrouted}:
-which errors are frequent, which are costly, and why the classifier failed
-on these inputs.}
+Only 143 of 36,690 test items are misrouted (Table~\ref{tab:task2_misrouting}).
+The frequent error, low occlusion sent to the identity branch (101 items),
+is harmless: leaving the small rectangle untouched scores slightly
+\emph{better} than the occlusion expert, which softens the whole image to
+repair 10\% of it. The costly errors are the 38 clean images sent to an
+expert, which lose 0.17--0.37 SSIM. Fig.~\ref{fig:task2_misrouted} shows the
+six worst, and all have the same cause: large uniform black regions,
+either a black background or black letterbox borders added by the
+photographer. The classifier reads them as occlusion masks and the occlusion
+expert ``fills'' them with smeared colours. This is the black-region
+ambiguity of Task~1, now made at the routing decision instead of inside the
+autoencoder.
 
 \subsection{Discussion}
-% TODO(results): Task 2 discussion.
-\TODO{Discuss specialisation vs.\ a universal model, and the cost of hard
-decisions near class boundaries (motivation for Task~3).}
+Hard routing turns an implicit decision into an explicit, inspectable one,
+and its accurate classifier makes the identity bypass the system's main
+gain. It does not improve corrupted inputs over the universal model, and its
+errors are all-or-nothing: an image near a class boundary (a small
+rectangle, a dark border) receives exactly one expert's treatment, even when
+the right answer lies in between, such as leaving most of the image
+untouched and repairing a small area. Task~3 replaces this hard choice with
+a learned weighted mixture.
 
 % =====================================================================
 \section{Task 3: Soft Mixture-of-Experts}
@@ -1341,7 +1377,7 @@ range.
 \subsection{Training procedure and logging}
 Each iteration first updates $D$ on a real and a generated (detached) pair,
 then updates $G$. Both use Adam with $\beta=(0.5,0.999)$ and constant
-learning rates; the final configuration is trained for 200 epochs with the
+learning rates; the final configuration is trained for 100 epochs with the
 paired augmentation of Section~\ref{sec:data}. The discriminator real loss,
 discriminator fake loss, generator adversarial loss and generator L1 loss
 are logged separately every epoch, together with the validation L1, PSNR and
@@ -1364,12 +1400,14 @@ J_{\mathrm{GAN}} = 0.5\,\mathcal{L}_1 + 0.5\,(1-\mathrm{SSIM})
 \end{equation}
 on images in $[0,1]$, with the generator in evaluation mode (dropout off).
 This rewards correct structure but may favour slightly smoother sketches;
-we return to this in Section~\ref{sec:limitations}. Twelve trials of 25
-epochs are run (TPE, median pruner with four start-up trials and ten warm-up
-epochs); trial~0 is fixed to the pix2pix-style defaults (learning rates
+we return to this in Section~\ref{sec:limitations}. Eight trials of 15
+epochs are run (TPE, median pruner with three start-up trials and six
+warm-up epochs; reduced from twelve trials of 25 epochs for time); trial~0
+is fixed to the pix2pix-style defaults (learning rates
 $2\times10^{-4}$, batch size 4, $c=64$, dropout 0.5, $d_s=16$,
-$\lambda_{L1}=100$). The best configuration is then retrained for the full
-200 epochs. Table~\ref{tab:task4_space} gives the search space.
+$\lambda_{L1}=100$). The best configuration is then retrained for 100
+epochs (halved from the planned 200 for time). Batch size 1 was removed from
+the search space because it made trials too slow. Table~\ref{tab:task4_space} gives the search space.
 
 \begin{table}[t]
 \centering
@@ -1380,45 +1418,45 @@ $\lambda_{L1}=100$). The best configuration is then retrained for the full
 \toprule
 Hyperparameter & Range (scale) & Selected \\
 \midrule
-Generator learning rate & $5\times10^{-5}$--$5\times10^{-4}$ (log) & \na \\
-Discriminator learning rate & $5\times10^{-5}$--$5\times10^{-4}$ (log) & \na \\
-Batch size & \{1, 4, 8, 16\} & \na \\
-Base channels $c$ & \{32, 48, 64\} & \na \\
-Dropout (generator) & 0--0.5 (linear) & \na \\
-Style embedding size $d_s$ & \{8, 16, 32\} & \na \\
-$\lambda_{L1}$ & 10--200 (log) & \na \\
+Generator learning rate & $5\times10^{-5}$--$5\times10^{-4}$ (log) & $1.2\times10^{-4}$ \\
+Discriminator learning rate & $5\times10^{-5}$--$5\times10^{-4}$ (log) & $4.5\times10^{-4}$ \\
+Batch size & \{4, 8, 16\} & 4 \\
+Base channels $c$ & \{32, 48, 64\} & 64 \\
+Dropout (generator) & 0--0.5 (linear) & 0.30 \\
+Style embedding size $d_s$ & \{8, 16, 32\} & 32 \\
+$\lambda_{L1}$ & 10--200 (log) & 121 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from configs/task4_cgan_best.yaml.
-\TODO{Fill from \file{configs/task4_cgan_best.yaml}.}
 \end{table}
 
 \subsection{Results}
-% TODO(results): Task 4 Optuna outcome.
-\TODO{Report completed/pruned trials, best trial and selected configuration
-(Table~\ref{tab:optuna_summary}); comment on the selected $\lambda_{L1}$
-relative to the pix2pix default of 100.}
+Of the eight trials, three completed and five were pruned. The best,
+trial~1 (validation objective 0.3288, SSIM 0.450 after 15 epochs), uses a
+discriminator learning rate almost four times the generator's and
+$\lambda_{L1}=121$, close to the pix2pix default of 100; the importances
+point to the discriminator learning rate (0.35), dropout (0.33) and
+generator learning rate (0.24), i.e.\ to the balance between the two players
+rather than to network size. The final generator has 42\,M parameters and
+its ONNX file is 168.5\,MB.
 
 \begin{figure}[t]
 \centering
-\figOrTodo{figures/task4_cgan_curves.png}{\columnwidth}{D real, D fake, G adversarial and G L1 losses and
-validation SSIM/objective per epoch of the final 200-epoch run (export from W\&B group task4-cgan)}
+\figOrTodo{figures/task4_cgan_curves.png}{\columnwidth}{GAN loss curves}
 \caption{Task 4 training losses and validation measurements.}
 \label{fig:task4_curves}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\figOrTodo{figures/task4_cgan_progress.png}{\columnwidth}{Fixed validation samples logged at several epochs (e.g.\ 1, 50, 100, 200), taken from the W\&B ``samples'' panel}
-\caption{Task 4 generator development on fixed validation photographs.}
-\label{fig:task4_progress}
-\end{figure}
-
-% TODO(results): interpret the GAN curves and progress grid.
-\TODO{Interpret Figs.~\ref{fig:task4_curves}--\ref{fig:task4_progress}:
-balance between $D$ and $G$, signs of instability or mode collapse, and
-when the validation objective stopped improving.}
+Fig.~\ref{fig:task4_curves} shows the four losses logged separately. The
+discriminator's real and fake losses fall together from about 0.35 to 0.25,
+and the generator's adversarial loss rises from about 2.7 to 3.9: the
+discriminator slowly gains the upper hand, as is typical for pix2pix-style
+training, but neither loss collapses to zero and the L1 term keeps the
+generator anchored, so training did not diverge. The generator's L1 loss
+and the validation objective improve steadily, and validation SSIM rises
+from 0.41 to 0.48, still creeping upwards at epoch 100, so the halved
+schedule probably cost some quality. The fixed validation photographs logged
+to W\&B every 10 epochs show the sketches sharpening over time.
 
 \begin{table}[t]
 \centering
@@ -1429,15 +1467,14 @@ when the validation objective stopped improving.}
 \toprule
 Group & Count & L1 & PSNR & SSIM \\
 \midrule
-All     & \na & \na & \na & \na \\
-Style 1 & \na & \na & \na & \na \\
-Style 2 & \na & \na & \na & \na \\
-Style 3 & \na & \na & \na & \na \\
+All     & 1046 & 0.1068 & 15.50 & 0.472 \\
+Style 1 & 619 & 0.0802 & 17.25 & 0.521 \\
+Style 2 & 381 & 0.1542 & 12.34 & 0.377 \\
+Style 3 & 46 & 0.0715 & 17.96 & 0.603 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task4_cgan_test_metrics.csv.
-\TODO{Fill from \file{report/results/task4_cgan_test_metrics.csv}.}
+
 \end{table}
 
 \begin{figure}[t]
@@ -1454,10 +1491,17 @@ Style 3 & \na & \na & \na & \na \\
 \label{fig:task4_swap}
 \end{figure}
 
-% TODO(results): interpret Task 4 table and figures.
-\TODO{Interpret Table~\ref{tab:task4_results} and
-Figs.~\ref{fig:task4_examples}--\ref{fig:task4_swap}: per-style quality and
-whether the style condition visibly changes the output.}
+On the official test split (Table~\ref{tab:task4_results}) the generated
+sketches reach SSIM 0.472 overall, with a clear split between styles: Style~2
+is much harder (SSIM 0.377) than Styles~1 and 3 (0.521 and 0.603). Style~2
+sketches are dense, high-contrast drawings with many individual hair
+strokes, whose exact positions cannot be predicted from the photograph, so
+any plausible stroke pattern is penalised pixel by pixel; Styles~1 and 3 are
+lighter and smoother. The Style~3 figure rests on only 46 test images. The
+style swap (Fig.~\ref{fig:task4_swap}) shows that the learned embedding
+really controls the output: for the same photograph, Style~1 gives a light
+outline drawing, Style~2 heavy dark shading and Style~3 a soft, toned
+sketch, while identity, pose and hairstyle are preserved across all three.
 
 \subsection{Failure cases}
 \begin{figure}[t]
@@ -1466,14 +1510,23 @@ whether the style condition visibly changes the output.}
 \caption{Task 4 failure cases (lowest test SSIM).}
 \label{fig:task4_failures}
 \end{figure}
-% TODO(results): discuss the four Task 4 failures.
-\TODO{Explain the four failures of Fig.~\ref{fig:task4_failures} (e.g.\
-unusual pose, lighting, accessories or background).}
+All four lowest-SSIM test pairs (Fig.~\ref{fig:task4_failures}, SSIM
+0.18--0.20) are Style~2 portraits of smiling people with long, voluminous
+hair. The generated sketches are recognisable and in the right style, but
+the artist's individual hair strokes and the exaggerated smile lines are
+placed differently from the ground truth, and the generator's strokes are
+softer. These are therefore failures of the pixel-wise metric as much as of
+the model: SSIM cannot reward a plausible but different stroke pattern.
 
 \subsection{Discussion}
-% TODO(results): Task 4 discussion.
-\TODO{Discuss the trade-off between the adversarial and L1 terms, and how
-well a paired L1/SSIM selection criterion agreed with visual quality.}
+The L1 term ($\lambda_{L1}=121$) dominates the generator objective in
+magnitude and keeps the sketches faithful to the photograph's structure,
+while the adversarial term supplies the stroke texture that L1 alone would
+average away. The paired L1/SSIM criterion agreed with visual quality on the
+whole (better-scoring styles also look cleaner), but its worst cases are
+visually reasonable sketches with differently placed strokes, so it
+understates the quality of dense styles. A perceptual or distribution-level
+measure would complement it if more validation data were available.
 
 % =====================================================================
 \section{Experimental Setup and Reproducibility}
@@ -1513,11 +1566,11 @@ training reads. Table~\ref{tab:optuna_summary} summarises the studies.
 \toprule
 Study & Trials$\times$ep. & Compl. & Pruned & Best & Best value \\
 \midrule
-Task 1 UDAE & 30$\times$10 & \na & \na & \na & \na \\
-Task 2 classifier & 25$\times$8  & \na & \na & \na & \na \\
-Task 2 specialists & 20$\times$8  & \na & \na & \na & \na \\
+Task 1 UDAE & 30$\times$10 & 19 & 11 & 20 & 0.1192 \\
+Task 2 classifier & 12$\times$6  & 3 & 9 & 0 & 0.9912 \\
+Task 2 specialists & 10$\times$5  & 3 & 7 & 2 & 0.1395 \\
 Task 3 MoE & 20$\times$(2+6) & \na & \na & \na & \na \\
-Task 4 cGAN & 12$\times$25 & \na & \na & \na & \na \\
+Task 4 cGAN & 8$\times$15 & 3 & 5 & 1 & 0.3288 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
