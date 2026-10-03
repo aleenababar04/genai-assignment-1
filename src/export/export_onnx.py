@@ -111,7 +111,60 @@ def export_task2(cfg, checkpoint=None):
     return exported
 
 
-TASKS = {"task1": export_task1, "task2": export_task2}
+def export_task3(cfg, checkpoint=None):
+    """Task 3: the complete mixture (gate, three experts, mixing) as ONE graph.
+
+    The temperature is stored inside the model, so it is part of the graph.
+    Outputs: the restored image, the four routing weights and the gate logits.
+    """
+    from src.evaluation.eval_moe import load_moe
+
+    task = load_config(PROJECT_ROOT / "configs/task3_moe.yaml")
+    name = task["checkpoint_name"]
+    checkpoint_path = checkpoint or PROJECT_ROOT / cfg["checkpoints_dir"] / f"{name}.pt"
+    onnx_path = PROJECT_ROOT / "models" / f"{name}.onnx"
+
+    model, _ = load_moe(checkpoint_path, torch.device("cpu"))
+    inputs = validation_batch(cfg)
+    output_names = ["output", "weights", "logits"]
+    export_model(model, inputs[:1], onnx_path, ["input"], output_names)
+    return name, onnx_path, verify_model(model, inputs, onnx_path, output_names)
+
+
+def export_task4(cfg, checkpoint=None):
+    """Task 4: the generator only (the discriminator is a training component).
+
+    The exported graph takes a photo in [0, 1] and a style index (0, 1, 2)
+    and returns the sketch in [0, 1].
+    """
+    from src.evaluation.eval_cgan import load_generator
+    from src.models.cgan import GeneratorForExport
+
+    task = load_config(PROJECT_ROOT / "configs/task4_cgan.yaml")
+    checkpoint_path = checkpoint or PROJECT_ROOT / cfg["checkpoints_dir"] / f"{task['checkpoint_name']}.pt"
+    onnx_path = PROJECT_ROOT / "models" / f"{task['generator_name']}.onnx"
+
+    generator, _ = load_generator(checkpoint_path, torch.device("cpu"))
+    model = GeneratorForExport(generator).eval()
+    # Verify on random photos in all three styles (the FS2K cache may not exist on every machine).
+    torch.manual_seed(0)
+    photos = torch.rand(6, 3, 128, 128)
+    styles = torch.tensor([0, 1, 2, 0, 1, 2], dtype=torch.long)
+    onnx_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.onnx.export(
+        model, (photos[:1], styles[:1]), str(onnx_path),
+        input_names=["photo", "style"], output_names=["sketch"],
+        dynamic_axes={"photo": {0: "batch"}, "style": {0: "batch"}, "sketch": {0: "batch"}},
+        opset_version=OPSET, dynamo=False,
+    )
+    with torch.no_grad():
+        expected = model(photos, styles).numpy()
+    session = ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
+    actual = session.run(["sketch"], {"photo": photos.numpy(), "style": styles.numpy()})[0]
+    return task["generator_name"], onnx_path, {"sketch": float(np.abs(expected - actual).max())}
+
+
+TASKS = {"task1": export_task1, "task2": export_task2, "task3": export_task3, "task4": export_task4}
 
 
 def main():

@@ -1,0 +1,50 @@
+# Task 3: jointly trained soft mixture-of-experts.
+# Starts from the trained Task 2 models: the gate from the classifier,
+# the experts from the three specialists.
+
+study_name: task3_moe          # optuna_studies/task3_moe.db
+wandb_group: task3-moe
+checkpoint_name: task3_moe     # checkpoints/task3_moe.pt
+
+# Same fixed validation objective as Tasks 1 and 2, so all three are comparable.
+objective_alpha: 0.8
+
+batch_size: 32                 # must be a multiple of 4 (balanced batches)
+
+# Stage 1: experts frozen, only the gate trains.
+warmup:
+  lr: 0.0005
+
+# A trial is stopped ("routing collapse") if, after the warm-up, the average
+# weight of any branch on the balanced validation set falls below this value.
+# With perfect routing on a balanced set every branch would average 0.25.
+collapse_threshold: 0.05
+
+optuna:
+  n_trials: 20
+  warmup_epochs: 2
+  finetune_epochs: 6
+  pruner_startup_trials: 5
+  pruner_warmup_epochs: 4
+
+final:
+  warmup_epochs: 3
+  finetune_epochs: 25
+  sample_every: 5
+  num_samples: 8
+
+# Ranges searched by Optuna. The SSIM weight is 1 - l1_weight.
+search_space:
+  lr: [0.00001, 0.0003]           # joint fine-tuning learning rate, log-uniform
+  tau: [0.5, 3.0]                 # gate temperature
+  ce_weight: [0.01, 1.0]          # lambda_c, log-uniform
+  balance_weight: [0.001, 0.1]    # lambda_b, log-uniform
+  l1_weight: [0.5, 0.95]          # lambda_1 (lambda_s = 1 - lambda_1)
+
+# The brief's suggested starting values.
+defaults:
+  lr: 0.0001
+  tau: 1.0
+  ce_weight: 0.1
+  balance_weight: 0.01
+  l1_weight: 0.8

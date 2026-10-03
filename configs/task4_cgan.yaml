@@ -1,0 +1,45 @@
+# Task 4: style-conditioned face-to-sketch conditional GAN (FS2K).
+# Shared settings (seed, paths, num_workers) come from configs/base.yaml.
+
+study_name: task4_cgan              # optuna_studies/task4_cgan.db
+wandb_group: task4-cgan
+checkpoint_name: task4_cgan         # checkpoints/task4_cgan.pt (generator + discriminator)
+generator_name: task4_generator     # models/task4_generator.onnx (generator only)
+out_channels: 3                     # sketches are stored as RGB
+
+# Adam betas used by pix2pix (a lower beta1 keeps GAN training more stable).
+adam_betas: [0.5, 0.999]
+
+# Every trial is scored on the validation split with this fixed formula
+# (images in [0, 1]):  objective = 0.5 * L1 + 0.5 * (1 - SSIM)
+objective_l1_weight: 0.5
+
+optuna:
+  n_trials: 12
+  epochs_per_trial: 25              # shorter than the final schedule, as the brief allows
+  pruner_startup_trials: 4
+  pruner_warmup_epochs: 10
+
+final:
+  epochs: 200
+  sample_every: 10                  # log the same validation photos every N epochs
+  samples_per_style: 2
+
+search_space:
+  lr_g: [0.00005, 0.0005]           # generator learning rate, log-uniform
+  lr_d: [0.00005, 0.0005]           # discriminator learning rate, log-uniform
+  batch_size: [1, 4, 8, 16]
+  base_channels: [32, 48, 64]
+  dropout: [0.0, 0.5]
+  style_dim: [8, 16, 32]
+  l1_weight: [10.0, 200.0]          # lambda_L1, log-uniform
+
+# pix2pix settings, used when no Optuna result exists yet.
+defaults:
+  lr_g: 0.0002
+  lr_d: 0.0002
+  batch_size: 4
+  base_channels: 64
+  dropout: 0.5
+  style_dim: 16
+  l1_weight: 100.0

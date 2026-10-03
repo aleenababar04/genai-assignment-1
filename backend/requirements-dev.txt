@@ -1,0 +1,3 @@
+# Extra packages for running the backend tests (not installed in the Docker image).
+pytest
+httpx

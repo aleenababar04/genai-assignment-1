@@ -252,6 +252,90 @@ Copy this block for each new decision.
 - **Choice and why:** Masked per-expert routing with four separate ONNX files; it follows the brief's equation literally and keeps the backend simple.
 - **Report section it feeds:** Task 2 methodology and results.
 
+### Task 3: mixture design, initialisation and two-stage training
+
+- **Date:** 2026-10-03
+- **Decision:** `SoftMoERestorer` computes `w = softmax(G(x) / tau)` with G the Task 2 classifier network, runs all three experts on every image, and outputs `w0*x + w1*A_salt(x) + w2*A_blur(x) + w3*A_occ(x)`. Gate and experts are loaded from the trained Task 2 checkpoints. Stage 1 (warm-up): experts frozen and kept in eval mode, so their BatchNorm statistics do not drift; only the gate trains (Adam, lr 5e-4). Stage 2: everything is unfrozen and fine-tuned with the Optuna-chosen smaller learning rate and a cosine schedule. Batches are exactly balanced (same collate as Task 2). `tau` is stored in the model, so it is saved with the weights and exported inside the ONNX graph.
+- **Question:** How should the hard-routing system be turned into a differentiable mixture that trains stably?
+- **Alternatives considered:**
+  - Train gate and experts from scratch together: the brief forbids it, and a random gate would give the experts meaningless mixtures to learn from.
+  - Freeze the experts by turning off gradients only: BatchNorm running statistics would still change in train mode, so the "frozen" experts would drift; keeping them in eval mode prevents this.
+  - Run only the top-weighted experts (sparse mixture): cheaper, but no longer the fully weighted sum the brief defines.
+- **Sources consulted:** Assignment brief, Task 3 (gating equation, initialisation, warm-up then joint fine-tuning, loss terms). To read first-hand and cite: Jacobs et al., "Adaptive Mixtures of Local Experts" (Neural Computation, 1991); Shazeer et al., "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer" (ICLR 2017), on load balancing.
+- **Experiment and numbers:** `tests/test_soft_moe.py`, 18 passed: mixing matches the hand-computed weighted sum, frozen experts get no gradients and keep their BatchNorm statistics, and the full pipeline exports to one ONNX graph matching PyTorch within 1e-4 on output, weights and logits. Trained results: TODO after the Kaggle run.
+- **Choice and why:** As above. It follows the brief's equations exactly and avoids the BatchNorm drift that a gradient-only freeze would cause.
+- **Report section it feeds:** Task 3 methodology.
+
+### Task 3: loss terms, cross-entropy on tempered logits, and collapse pruning
+
+- **Date:** 2026-10-03
+- **Decision:** `L = l1*L1 + ls*(1 - SSIM) + lc*CE + lb*L_balance` with `ls = 1 - l1`, `L_balance = sum_k (wbar_k - 1/4)^2` over a balanced batch (the brief's suggested form), and the cross-entropy computed on `G(x) / tau`, the same tempered distribution that produces the routing weights. Optuna (20 trials, 2 warm-up + 6 fine-tune epochs) searches the fine-tuning learning rate (1e-5 to 3e-4, log), tau (0.5 to 3.0), lc (0.01 to 1, log), lb (0.001 to 0.1, log) and l1 (0.5 to 0.95). Trial 0 is the brief's starting point (0.8, 0.2, 0.1, 0.01, tau 1). A trial is pruned for routing collapse if, after the warm-up, any branch's mean weight on the balanced validation set falls below 0.05; otherwise the median pruner applies. Trials are scored with the same fixed objective as Tasks 1 and 2.
+- **Question:** How should the joint loss and its search be set up so the gate stays meaningful and does not collapse onto one expert?
+- **Alternatives considered:**
+  - Cross-entropy on the raw logits: trains the classifier but not the routing weights actually used when tau is not 1.
+  - Cross-entropy on `logits / tau`: directly ties the weights used for mixing to the known corruption label.
+  - Entropy regulariser instead of the squared balance term: the brief allows it if justified; the squared term was kept because it is the brief's suggestion and is easy to interpret (zero when each branch averages 1/4 on a balanced batch).
+  - Detect collapse only after training: wastes the trial's compute; pruning stops it as soon as it shows.
+- **Sources consulted:** Assignment brief, Task 3 (loss, starting weights, "trial pruning may be used when a configuration performs poorly or exhibits routing collapse").
+- **Experiment and numbers:** TODO after the Kaggle run: number of trials pruned for collapse, the best lambdas and tau, and how the mean weights per true corruption compare with the ideal (about 1 on the matching branch).
+- **Choice and why:** As above. The brief's loss with the CE term on the tempered distribution, plus explicit collapse pruning.
+- **Report section it feeds:** Task 3 methodology and Optuna search design.
+
+### Task 3: gate analysis
+
+- **Date:** 2026-10-03
+- **Decision:** On the test manifest, report the mean of each branch weight per (true corruption, severity) as a CSV and a heatmap, the spread of the weights per true corruption as box plots, four "one expert dominates" examples (highest max weight, spread across corruptions) and four "weight shared" examples (highest routing entropy). An expert counts as **inactive** if it is the top-weighted branch for under 1% of images and its mean weight is below 0.05, and as **dominating unrelated inputs** if its mean weight on images of other corruptions exceeds 0.5.
+- **Question:** How can the brief's gate-behaviour requirements be checked objectively rather than by eye?
+- **Alternatives considered:** Inspecting a few images only (subjective); thresholds on fixed numbers (reproducible and reportable). The thresholds are a judgement call and are stated in the report so they can be challenged.
+- **Sources consulted:** Assignment brief, Task 3 (average weights per corruption and severity, dominant vs. distributed examples, heatmap, inactive or dominating experts).
+- **Experiment and numbers:** `tests/test_routing_analysis.py`, 10 passed, including hand-made healthy, inactive and dominating cases. Results: TODO after the Kaggle run.
+- **Choice and why:** Numeric criteria plus figures, so every claim about the gate is backed by a number.
+- **Report section it feeds:** Task 3 results, routing analysis.
+
+### Task 4: FS2K split, pairing and paired augmentation
+
+- **Date:** 2026-10-03
+- **Decision:** Use the official `anno_train.json` / `anno_test.json` (1,058 / 1,046 pairs according to the FS2K repository). Hold out 15% of the training records per style (seed 42, `round(n_style * 0.15)`) as validation and save the split to `manifests/fs2k_split.json`. A photo path maps to its sketch by the official rule (photo/photoK/imageN -> sketch/sketchK/sketchN, `.jpg` first, then `.png`). Both images go through the same RGB conversion and direct bicubic resize to 128 x 128. Training augmentation is pix2pix-style jitter (resize to 143 x 143, random 128 x 128 crop) plus a horizontal flip, applied to the stacked photo-sketch pair so both always receive identical parameters.
+- **Question:** How should the data be split and augmented without breaking the photo-sketch correspondence?
+- **Alternatives considered:**
+  - Random (unstratified) validation split: could leave a style under-represented in validation, so per-style quality would be measured on very few images.
+  - Augment photo and sketch independently: destroys pixel alignment, which the brief explicitly forbids.
+  - No augmentation: simpler, but about 900 training pairs is little for a GAN; jitter and flip are the pix2pix defaults.
+- **Sources consulted:** Assignment brief, Task 4 (official split, 15% stratified validation with seed 42, paired augmentation). The FS2K GitHub repository (github.com/DengPingFan/FS2K), README and `tools/split_train_test.py`, read via the tool on 2026-10-03 for the folder layout, annotation fields and the photo-to-sketch naming rule. To cite: Fan et al., "FS2K" (the dataset paper named in the repository).
+- **Experiment and numbers:** `tests/test_fs2k.py`, 17 passed on a synthetic FS2K tree, including the check that an augmented pair whose sketch is an exact copy of the photo stays identical over 50 draws. Real per-style counts: TODO after running `python -m src.data.prepare_fs2k` (it also prints the original image sizes and how many sketches are greyscale, which decides whether the generator should output 1 or 3 channels; currently 3).
+- **Choice and why:** As above, to follow the brief exactly and keep the pairing provably intact.
+- **Report section it feeds:** Task 4 dataset preparation.
+
+### Task 4: generator, discriminator and style conditioning
+
+- **Date:** 2026-10-03
+- **Decision:** pix2pix-style U-Net generator for 128 x 128 (7 stride-2 downsamplings to 1 x 1, skip connections, dropout in the three innermost up-layers, tanh output) and a 70 x 70 PatchGAN discriminator (C64-C128-C256-C512, output a 14 x 14 map of real/fake logits for a 128 x 128 input). Each network has its OWN learned `nn.Embedding(3, style_dim)`. The generator receives the style twice: as a broadcast map concatenated with the photo at the input, and concatenated with the 1 x 1 bottleneck. The discriminator receives it as a broadcast map concatenated with the photo and the (real or generated) sketch. BatchNorm everywhere except the first encoder layer and the 1 x 1 bottleneck (where it would be undefined at batch size 1). Weights initialised N(0, 0.02).
+- **Question:** How should the style condition be built into both networks, as the brief requires, rather than used only as an interface label?
+- **Alternatives considered:**
+  - One-hot style channels instead of a learned embedding: the brief asks for a learned categorical embedding.
+  - Style injected only at the input: early layers can use it for stroke texture, but the global style decision is then made only through the skip-free path; adding it at the bottleneck gives the decoder direct access.
+  - Feature-wise modulation (FiLM/AdaIN) in every layer: more expressive, but more code to explain and not required.
+  - Shared embedding between G and D: would couple the two players' parameters; separate embeddings keep the adversarial game clean.
+  - InstanceNorm instead of BatchNorm: a known alternative for style tasks; BatchNorm was kept to match pix2pix.
+- **Sources consulted:** Assignment brief, Task 4. To read first-hand and cite: Isola et al., "Image-to-Image Translation with Conditional Adversarial Networks" (CVPR 2017); Mirza and Osindero, "Conditional Generative Adversarial Nets" (2014).
+- **Experiment and numbers:** `tests/test_cgan.py`, 16 passed: the style changes the generator output and the discriminator logits, gradients reach both embeddings, batch size 1 works, and the export wrapper's ONNX graph matches PyTorch within 1e-4 for all three styles. Parameters (style_dim 16): generator 10,535,571 / 41,977,075 and discriminator 704,465 / 2,785,137 at base channels 32 / 64.
+- **Choice and why:** As above, the standard paired image-to-image design with the condition visibly built into both networks.
+- **Report section it feeds:** Task 4 methodology.
+
+### Task 4: losses, Optuna objective and training schedule
+
+- **Date:** 2026-10-03
+- **Decision:** Discriminator loss `0.5 * (BCE(D(x,y,s), 1) + BCE(D(x,G(x,s),s), 0))` with logits; generator loss `BCE(D(x,G(x,s),s), 1) + lambda_L1 * L1`. Adam with betas (0.5, 0.999). The four losses (D real, D fake, G adversarial, G L1) are logged separately every epoch, and the same validation photos (two per style) are logged every 10 epochs as photo / true sketch / generated / the same photo in all three styles. Optuna (12 trials of 25 epochs, trial 0 = pix2pix defaults) tunes both learning rates, batch size {1, 4, 8, 16}, base channels {32, 48, 64}, dropout 0-0.5, style embedding size {8, 16, 32} and lambda_L1 10-200 (log). The best configuration is retrained for 200 epochs. Each trial is scored with the fixed validation objective `0.5 * L1 + 0.5 * (1 - SSIM)` on [0, 1] images; the generator is evaluated with dropout off.
+- **Question:** How can a GAN be tuned and selected when its losses do not measure output quality?
+- **Alternatives considered:**
+  - Select on the generator or discriminator loss: these oscillate by design and do not track image quality.
+  - FID: the standard GAN metric, but with only about 160 validation images it is strongly biased and noisy, and it needs an Inception network.
+  - L1 + SSIM against the paired ground truth: possible because FS2K is paired; rewards correct structure, though it can favour slightly smoother sketches. This limitation is stated in the report.
+- **Sources consulted:** Assignment brief, Task 4 (BCE with logits, initial lambda_L1 = 100, the hyperparameters to tune, shorter Optuna trials then full retraining, separate loss logging, fixed validation samples). To read first-hand: the pix2pix paper (loss halving for D, Adam betas, lambda 100) and Heusel et al., "GANs Trained by a Two Time-Scale Update Rule" (NeurIPS 2017) for FID and its sample-size bias.
+- **Experiment and numbers:** TODO after the Kaggle run.
+- **Choice and why:** Paired L1/SSIM objective, because it is meaningful with a small validation set and is the same kind of measure used in Tasks 1-3.
+- **Report section it feeds:** Task 4 methodology, Optuna search design and limitations.
+
 ## Upcoming decisions
 
 Empty headings for decisions that still have to be made. Fill each one in with the template above when the decision is taken.
@@ -268,45 +352,21 @@ TODO: fill in from the Optuna result (best alpha and how the objective varies wi
 
 ### Task 3: Soft mixture-of-experts
 
-#### Warm-up length and joint fine-tuning schedule
+#### Gate temperature and loss weights
 
-TODO:
-
-#### Gate temperature
-
-TODO:
-
-#### Balance regulariser (form and weight)
-
-TODO:
+TODO: fill in from the Optuna result (best tau, lambdas, and how routing sharpness changed with tau).
 
 ### Task 4: Style-conditioned face-to-sketch GAN
 
-#### How the style embedding is injected into the generator
+#### Final lambda_L1 and output channels
 
-TODO:
-
-#### How the style embedding is injected into the discriminator
-
-TODO:
-
-#### GAN loss type and reconstruction loss weight
-
-TODO:
-
-#### PatchGAN receptive field
-
-TODO:
+TODO: fill in from the Optuna result and the FS2K greyscale check.
 
 ### Cross-cutting
 
-#### Optuna search spaces, sampler, pruner and trial budget
-
-TODO:
-
 #### ONNX opset version and verification tolerance
 
-TODO:
+Opset 17 with the classic TorchScript exporter (`dynamo=False`, needs no extra packages; PyTorch warns it is deprecated), dynamic batch axis, and a maximum absolute PyTorch-ONNX difference of 1e-4 on real validation images (random photos for Task 4). TODO: report the measured differences for the trained models (written to `report/results/*_onnx_check.json`).
 
 #### How trained models are distributed to the evaluator
 
