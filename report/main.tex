@@ -830,7 +830,7 @@ accuracy (about 0.995), i.e.\ without over-fitting.
 \figOrTodo{figures/task2_specialist_occlusion_curves.png}{\columnwidth}{Occlusion specialist curves}
 \caption{Task 2 training and validation curves: classifier (top) and the
 occlusion specialist (bottom; the other two specialists' curves are in
-\file{figures/task2\_specialist\_*\_curves.png}).}
+\file{figures/task2_specialist_*_curves.png}).}
 \label{fig:task2_curves}
 \end{figure}
 
@@ -1631,7 +1631,7 @@ Task 4 cGAN & 8$\times$15 & 3 & 5 & 1 & 0.3288 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-Counts are read from \file{optuna\_studies/*.db}. Objectives: Tasks 1--3
+Counts are read from \file{optuna_studies/*.db}. Objectives: Tasks 1--3
 minimise $J$ (Eq.~\eqref{eq:val_obj}), the classifier maximises macro-F1,
 Task~4 minimises $J_{\mathrm{GAN}}$. No Task~3 trial was pruned for routing
 collapse.
@@ -2164,7 +2164,7 @@ abstract, limitations, conclusion), and the scripts that plot the Optuna
 studies and the W\&B training curves.
 \emph{Verification:} every number in the tables was copied from the result
 files and the Optuna databases and can be printed again with
-\file{scripts/show\_results.py}; the tool viewed the figures and wrote its
+\file{scripts/show_results.py}; the tool viewed the figures and wrote its
 descriptions of them into the text. The Task~4 test evaluation was rerun
 locally after the Kaggle run failed on a missing cache file. A statement about
 the Kaggle GPU model that the tool had written without evidence was removed.
@@ -2173,9 +2173,9 @@ the Kaggle GPU model that the tool had written without evidence was removed.
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
 \emph{Used for:} writing the student's study documents and helper scripts
-(\file{docs/STUDY_GUIDE.md}, \file{docs/testing\_and\_outputs\_guide.md},
-\file{scripts/show\_results.py}, \file{build\_gallery.py},
-\file{demo\_temperature.py}).
+(\file{docs/STUDY_GUIDE.md}, \file{docs/testing_and_outputs_guide.md},
+\file{scripts/show_results.py}, \file{build_gallery.py},
+\file{demo_temperature.py}).
 \emph{Verification:} a second subagent compared every claim with the code,
 configuration files, result files and Optuna databases and corrected five
 errors; six further rewordings it suggested were applied. It could not read
