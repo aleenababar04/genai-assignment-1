@@ -13,6 +13,8 @@ outputs/
 *.pt
 *.pth
 *.ckpt
+models/*.onnx
+models/*.part
 
 # Secrets
 .env

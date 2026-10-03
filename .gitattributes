@@ -1,1 +1,2 @@
-*.onnx filter=lfs diff=lfs merge=lfs -text
+# The ONNX models are distributed through a GitHub Release (see README and
+# scripts/download_models.py), not through Git or Git LFS.

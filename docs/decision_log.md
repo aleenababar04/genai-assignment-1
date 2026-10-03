@@ -370,7 +370,7 @@ Opset 17 with the classic TorchScript exporter (`dynamo=False`, needs no extra p
 
 #### How trained models are distributed to the evaluator
 
-TODO:
+Decision (2026-10-03): the seven ONNX files are attached to a GitHub Release (`models-v1`) and fetched with `scripts/download_models.py` (standard library only) or by hand; `models/*.onnx` is git-ignored. Alternatives: Git LFS (the brief allows it, but GitHub's free tier has 1 GB of storage and 1 GB of download bandwidth per month, and the Task 4 generator alone is 168 MB at 64 base channels, so a few clones by evaluators could exhaust the quota and break the download); committing the files directly (the brief says not to). Release assets have no bandwidth quota and a 2 GB per-file limit. TODO: create the release once the trained models exist.
 
 #### Frontend and backend structure (one app, four workspaces)
 
