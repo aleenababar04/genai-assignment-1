@@ -183,6 +183,75 @@ Copy this block for each new decision.
 - **Choice and why:** Fixed 0.8 / 0.2 objective with TPE and median pruning. One comparable number per trial, with the plain metrics kept alongside so the choice can be re-examined.
 - **Report section it feeds:** Task 1 methodology, Optuna search design.
 
+### Task 2: classifier architecture
+
+- **Date:** 2026-10-03
+- **Decision:** Four convolutional blocks (two 3x3 conv + BatchNorm + ReLU, then 2x2 max-pooling), global average pooling, dropout and a linear layer to 4 logits. The first block runs at the full 128 x 128 resolution. Channel width is one of three presets tuned by Optuna: small (16-128, 294,516 parameters), medium (32-256, 1,174,244), large (48-384, 2,639,188).
+- **Question:** What classifier can separate clean, salt-and-pepper, blur and occlusion inputs, and also serve as the Task 3 gate?
+- **Alternatives considered:**
+  - Downsample early (stride-2 first layer, or a pretrained ImageNet network on resized input): cheaper, but the evidence that separates clean from mildly blurred or lightly noisy images is in single pixels and fine edges, which early downsampling removes.
+  - Full-resolution first block, then pooling: keeps that detail; costs more computation in the first block.
+  - Output probabilities directly (softmax inside the model): convenient for display, but cross-entropy and the Task 3 temperature softmax both need raw logits.
+- **Sources consulted:** Assignment brief, Task 2 (four classes, cross-entropy, Optuna over learning rate, batch size, channel configuration, dropout and weight decay) and Task 3 (gate initialised from the classifier, `softmax(G(x)/tau)`).
+- **Experiment and numbers:** `tests/test_classifier_balanced.py`, 17 passed, including an ONNX export that matches PyTorch within 1e-4. CPU forward for a batch of 64 (medium): about 1.6 s, so training must run on the GPU. Trained results: TODO after the Kaggle run (expect clean vs. low blur to be the hardest pair).
+- **Choice and why:** Full-resolution first block with logits output, for the fine-detail reason above and so the same network can become the gate.
+- **Report section it feeds:** Task 2 methodology, classifier.
+
+### Task 2: exactly balanced training batches
+
+- **Date:** 2026-10-03
+- **Decision:** A custom collate function assigns labels 0,1,2,3,0,1,2,3,... across each batch, shuffles them, and corrupts every image according to its label. Batch sizes must be multiples of 4, and the last incomplete batch is dropped, so every batch has exactly 25% of each class. The same batching will be reused for Task 3.
+- **Question:** How should "the training batches must be balanced" be met?
+- **Alternatives considered:**
+  - Random condition per image with probability 1/4 (the Task 1 dataset): balanced only on average; a batch of 32 can easily hold 4 of one class and 12 of another.
+  - A weighted sampler: also balanced only in expectation.
+  - Assign labels by batch position: exact balance in every batch, and the shuffle keeps position from carrying information.
+- **Sources consulted:** Assignment brief, Task 2, and Task 3's balance loss, which is defined over "a balanced training batch".
+- **Experiment and numbers:** Tests confirm exact counts of B/4 per class for batch sizes 4, 8 and 64 and over a full epoch. Collate cost on CPU: about 0.10 s per batch of 64.
+- **Choice and why:** Label-by-position collate, the only option that guarantees balance per batch rather than on average.
+- **Report section it feeds:** Task 2 methodology, training procedure.
+
+### Task 2: classifier Optuna objective
+
+- **Date:** 2026-10-03
+- **Decision:** Maximise validation macro-F1 on the balanced validation manifest; checkpoint selection uses macro-F1 with ties broken by the lower validation cross-entropy. Search space: learning rate 1e-4 to 3e-3 (log), batch size {32, 64, 128}, channel preset {small, medium, large}, dropout 0 to 0.5, weight decay 1e-6 to 1e-3 (log, AdamW). 25 trials of 8 epochs with median pruning.
+- **Question:** Which validation number should the classifier search optimise?
+- **Alternatives considered:**
+  - Accuracy: on a perfectly balanced validation set it ranks models almost identically to macro-F1, but macro-F1 is one of the required reported metrics and penalises a model that sacrifices one class.
+  - Validation cross-entropy: smoother, but rewards confident probabilities rather than correct decisions; kept as the tie-breaker and logged.
+- **Sources consulted:** Assignment brief, Task 2 (required metrics). To read first-hand: Loshchilov and Hutter, "Decoupled Weight Decay Regularization" (ICLR 2019), for AdamW.
+- **Experiment and numbers:** TODO after the Kaggle run.
+- **Choice and why:** Macro-F1, because it is what the report must show and it cannot hide a weak class.
+- **Report section it feeds:** Task 2 methodology, Optuna search design.
+
+### Task 2: shared search for the three specialists
+
+- **Date:** 2026-10-03
+- **Decision:** One Optuna study for all three specialists. In each trial the three are trained side by side (one epoch each in turn), each only on its own corruption, and the trial's score is the mean of their validation objectives (fixed `0.8 * L1 + 0.2 * (1 - SSIM)`, as in Task 1, each on its own 736 validation items). The best shared configuration is then used to train the three independently, each with its own W&B run and checkpoint. Search space: learning rate, batch size, bottleneck channels, base channels and alpha (dropout fixed at 0).
+- **Question:** How can the specialists be tuned without running three full searches?
+- **Alternatives considered:**
+  - Three separate searches: the most tailored settings, at three times the cost.
+  - One search on a single proxy model trained on all three corruptions together: cheap, but tunes a different model from the ones actually used.
+  - One search scoring all three real specialists: the brief explicitly allows a shared search; costs three short trainings per trial, and side-by-side training still allows per-epoch pruning on the mean.
+- **Sources consulted:** Assignment brief, Task 2: "you may use a shared Optuna search to identify a common architecture and then train the three specialists independently".
+- **Experiment and numbers:** TODO after the Kaggle run (the best trial's per-specialist PSNR/SSIM are stored as trial attributes).
+- **Choice and why:** Shared search over the real specialists, which is what the brief allows and tunes exactly the models that get used.
+- **Report section it feeds:** Task 2 methodology, specialists.
+
+### Task 2: routing implementation and evaluation
+
+- **Date:** 2026-10-03
+- **Decision:** `HardRoutedRestorer` takes the argmax of the classifier's softmax, returns clean-routed images unchanged (identity bypass), and runs each expert only on the images routed to it. It is evaluated on the test manifest in oracle mode (manifest label chooses the branch) and predicted mode. Misrouted images are tabulated by (true class, chosen branch) with their PSNR loss against oracle routing, and the worst six are shown. For the application, the classifier and the three specialists are exported as four ONNX files and the backend performs the routing.
+- **Question:** How should routing be implemented, evaluated and deployed?
+- **Alternatives considered:**
+  - Run all three experts on every image and pick one output: simpler code, but three times the work and the clean image would still pass through an expert, against the identity-bypass rule.
+  - Run only the chosen expert per image: no wasted computation, and clean images are bit-identical to the input.
+  - Export the whole router as one ONNX graph: possible, but data-dependent branching is awkward in ONNX, and the brief asks for the classifier and specialists to be exported individually.
+- **Sources consulted:** Assignment brief, Task 2 (routing equation, identity bypass, oracle vs. predicted modes, export of the four models).
+- **Experiment and numbers:** `tests/test_hard_router.py`, 14 passed: clean-routed images are returned unchanged, an expert is never called when nothing is routed to it, and oracle routes override the classifier while probabilities are still reported. Test-set results: TODO after the Kaggle run.
+- **Choice and why:** Masked per-expert routing with four separate ONNX files; it follows the brief's equation literally and keeps the backend simple.
+- **Report section it feeds:** Task 2 methodology and results.
+
 ## Upcoming decisions
 
 Empty headings for decisions that still have to be made. Fill each one in with the template above when the decision is taken.
@@ -196,20 +265,6 @@ Currently `pytorch-msssim` with its defaults (11 x 11 Gaussian window, sigma 1.5
 #### Loss weight alpha between L1 and (1 - SSIM)
 
 TODO: fill in from the Optuna result (best alpha and how the objective varies with it).
-
-### Task 2: Classifier and hard-routed specialists
-
-#### Classifier architecture
-
-TODO:
-
-#### Specialist architecture and shared versus separate hyperparameter search
-
-TODO:
-
-#### Identity bypass for clean inputs
-
-TODO:
 
 ### Task 3: Soft mixture-of-experts
 

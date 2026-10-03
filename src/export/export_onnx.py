@@ -81,7 +81,37 @@ def export_task1(cfg, checkpoint=None):
     return name, onnx_path, differences
 
 
-TASKS = {"task1": export_task1}
+def export_task2(cfg, checkpoint=None):
+    """Task 2: the classifier and the three specialists, as four separate files.
+
+    Hard routing itself (pick one branch, identity for clean) is done by the
+    backend from the classifier's probabilities, so it is not part of a graph.
+    """
+    from src.evaluation.eval_task2 import load_classifier
+    from src.training.train_specialists import SPECIALISTS
+
+    classifier_task = load_config(PROJECT_ROOT / "configs/task2_classifier.yaml")
+    specialist_task = load_config(PROJECT_ROOT / "configs/task2_specialists.yaml")
+    checkpoints_dir = PROJECT_ROOT / cfg["checkpoints_dir"]
+    inputs = validation_batch(cfg)
+    exported = []
+
+    name = classifier_task["checkpoint_name"]
+    model, _ = load_classifier(checkpoints_dir / f"{name}.pt", torch.device("cpu"))
+    onnx_path = PROJECT_ROOT / "models" / f"{name}.onnx"
+    export_model(model, inputs[:1], onnx_path, ["input"], ["logits"])
+    exported.append((name, onnx_path, verify_model(model, inputs, onnx_path, ["logits"])))
+
+    for specialist in SPECIALISTS:
+        name = f"{specialist_task['checkpoint_prefix']}_{specialist}"
+        model, _ = load_autoencoder(checkpoints_dir / f"{name}.pt", torch.device("cpu"))
+        onnx_path = PROJECT_ROOT / "models" / f"{name}.onnx"
+        export_model(model, inputs[:1], onnx_path, ["input"], ["output"])
+        exported.append((name, onnx_path, verify_model(model, inputs, onnx_path, ["output"])))
+    return exported
+
+
+TASKS = {"task1": export_task1, "task2": export_task2}
 
 
 def main():
@@ -92,22 +122,27 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config(PROJECT_ROOT / args.config)
-    name, onnx_path, differences = TASKS[args.task](cfg, args.checkpoint)
+    exported = TASKS[args.task](cfg, args.checkpoint)
+    if isinstance(exported, tuple):  # a task that exports a single model
+        exported = [exported]
 
-    size_mb = onnx_path.stat().st_size / 1e6
-    print(f"exported {onnx_path} ({size_mb:.1f} MB, opset {OPSET})")
-    for output_name, difference in differences.items():
-        status = "OK" if difference <= TOLERANCE else "MISMATCH"
-        print(f"  {output_name}: max |PyTorch - ONNX| = {difference:.2e}  [{status}]")
+    worst = 0.0
+    for name, onnx_path, differences in exported:
+        size_mb = onnx_path.stat().st_size / 1e6
+        print(f"exported {onnx_path} ({size_mb:.1f} MB, opset {OPSET})")
+        for output_name, difference in differences.items():
+            status = "OK" if difference <= TOLERANCE else "MISMATCH"
+            print(f"  {output_name}: max |PyTorch - ONNX| = {difference:.2e}  [{status}]")
+            worst = max(worst, difference)
 
-    # Keep the numbers for the report.
-    results_path = PROJECT_ROOT / "report" / "results" / f"{name}_onnx_check.json"
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(results_path, "w", encoding="utf-8") as f:
-        json.dump({"model": name, "opset": OPSET, "tolerance": TOLERANCE,
-                   "size_mb": round(size_mb, 2), "max_abs_diff": differences}, f, indent=1)
+        # Keep the numbers for the report.
+        results_path = PROJECT_ROOT / "report" / "results" / f"{name}_onnx_check.json"
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(results_path, "w", encoding="utf-8") as f:
+            json.dump({"model": name, "opset": OPSET, "tolerance": TOLERANCE,
+                       "size_mb": round(size_mb, 2), "max_abs_diff": differences}, f, indent=1)
 
-    if max(differences.values()) > TOLERANCE:
+    if worst > TOLERANCE:
         raise SystemExit("ONNX output does not match PyTorch within the tolerance.")
 
 

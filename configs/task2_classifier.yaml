@@ -1,0 +1,30 @@
+# Task 2a: corruption classifier (clean / salt-and-pepper / blur / occlusion).
+# Shared settings (seed, paths, num_workers) come from configs/base.yaml.
+
+study_name: task2_classifier        # optuna_studies/task2_classifier.db
+wandb_group: task2-classifier
+checkpoint_name: task2_classifier   # checkpoints/task2_classifier.pt
+
+optuna:
+  n_trials: 25
+  epochs_per_trial: 8
+  pruner_startup_trials: 5
+  pruner_warmup_epochs: 3
+
+final:
+  epochs: 40
+
+# Ranges searched by Optuna. Batch sizes must be multiples of 4 (balanced batches).
+search_space:
+  lr: [0.0001, 0.003]                 # log-uniform
+  batch_size: [32, 64, 128]
+  channels: [small, medium, large]    # presets in src/models/classifier.py
+  dropout: [0.0, 0.5]
+  weight_decay: [0.000001, 0.001]     # log-uniform, used by AdamW
+
+defaults:
+  lr: 0.001
+  batch_size: 64
+  channels: medium
+  dropout: 0.3
+  weight_decay: 0.0001

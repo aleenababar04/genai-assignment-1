@@ -220,9 +220,18 @@ def test_summary_row_order_and_counts():
         ("blur", "low"),
         ("blur", "high"),
         ("occlusion", "high"),
+        ("corrupted", "all"),
         ("all", "all"),
     ]
-    assert [row["count"] for row in rows] == [1, 1, 1, 2, 1, 1, 7]
+    assert [row["count"] for row in rows] == [1, 1, 1, 2, 1, 1, 6, 7]
+
+
+def test_summary_corrupted_row_excludes_clean():
+    entries, metrics = make_summary_inputs()
+    corrupted = summarise_by_condition(entries, metrics)[-2]
+    keep = [i for i, entry in enumerate(entries) if entry["condition"] != "clean"]
+    for name, values in metrics.items():
+        assert corrupted[name] == pytest.approx(values[keep].mean())
 
 
 def test_summary_group_means():
@@ -257,7 +266,9 @@ def test_summary_puts_sampled_after_fixed_severities():
     metrics = {"l1": np.array([0.1, 0.2, 0.3])}
     rows = summarise_by_condition(entries, metrics)
     order = [(row["condition"], row["severity"]) for row in rows]
-    assert order == [("clean", "none"), ("blur", "high"), ("blur", "sampled"), ("all", "all")]
+    assert order == [
+        ("clean", "none"), ("blur", "high"), ("blur", "sampled"), ("corrupted", "all"), ("all", "all"),
+    ]
 
 
 def test_mean_metrics():

@@ -101,7 +101,7 @@ def describe(entry, metrics, index):
 
 def save_metric_bars(rows, path, metric="psnr", title=None):
     """Bar chart of input vs restored quality for every (condition, severity) row."""
-    rows = [r for r in rows if r["condition"] != "all"]
+    rows = [r for r in rows if r["condition"] not in ("all", "corrupted")]  # summary rows
     labels = [f"{r['condition']}\n{r['severity']}" for r in rows]
     x = np.arange(len(rows))
     fig, ax = plt.subplots(figsize=(10, 3.6))

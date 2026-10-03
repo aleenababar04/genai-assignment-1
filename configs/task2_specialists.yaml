@@ -1,0 +1,35 @@
+# Task 2b: three specialist autoencoders (salt-and-pepper, blur, occlusion).
+# They share one architecture found by a single Optuna search, then are
+# trained independently, each only on its own corruption.
+
+study_name: task2_specialists          # optuna_studies/task2_specialists.db
+wandb_group: task2-specialists
+checkpoint_prefix: task2_specialist    # checkpoints/task2_specialist_<name>.pt
+
+# Same fixed validation objective as Task 1, so the numbers are comparable.
+objective_alpha: 0.8
+
+optuna:
+  n_trials: 20
+  epochs_per_trial: 8      # each trial trains all three specialists for this many epochs
+  pruner_startup_trials: 5
+  pruner_warmup_epochs: 3
+
+final:
+  epochs: 60
+  sample_every: 5
+  num_samples: 8
+
+search_space:
+  lr: [0.0001, 0.003]                    # log-uniform
+  batch_size: [32, 64, 128]
+  latent_channels: [16, 32, 64, 128]     # bottleneck is 8 x 8 x latent_channels
+  base_channels: [32, 48, 64]
+  alpha: [0.5, 0.95]                     # weight of L1 against (1 - SSIM)
+
+defaults:
+  lr: 0.001
+  batch_size: 64
+  latent_channels: 32
+  base_channels: 32
+  alpha: 0.8

@@ -103,7 +103,12 @@ def summarise_by_condition(entries: list, metrics: dict) -> list:
     `evaluate_restoration` (item i of every array belongs to entries[i]).
     Rows are ordered clean, salt_pepper, blur, occlusion and, inside each
     condition, none, low, medium, high, sampled. Groups with no entries are
-    skipped. The last row has condition "all" and severity "all".
+    skipped. The last two rows are "corrupted / all" (every entry except the
+    clean ones) and "all / all" (every entry).
+
+    The "corrupted" row exists because a clean input that is returned
+    unchanged scores the capped 100 dB PSNR, which would dominate an
+    average that includes it.
     """
     conditions = np.array([entry["condition"] for entry in entries])
     severities = np.array([entry["severity"] for entry in entries])
@@ -120,6 +125,13 @@ def summarise_by_condition(entries: list, metrics: dict) -> list:
             for name, values in metrics.items():
                 row[name] = float(np.mean(np.asarray(values)[mask]))
             rows.append(row)
+
+    corrupted_mask = conditions != "clean"
+    if corrupted_mask.any():
+        corrupted = {"condition": "corrupted", "severity": "all", "count": int(corrupted_mask.sum())}
+        for name, values in metrics.items():
+            corrupted[name] = float(np.mean(np.asarray(values)[corrupted_mask]))
+        rows.append(corrupted)
 
     overall = {"condition": "all", "severity": "all", "count": len(entries)}
     overall.update(mean_metrics(metrics))
