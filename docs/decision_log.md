@@ -165,7 +165,7 @@ Copy this block for each new decision.
   - One skip at 16 x 16 (4c channels): low resolution, so it cannot copy fine detail, but it does let information bypass the 8 x 8 bottleneck.
   - Skips at high resolution (64 x 64 or 128 x 128): would let the network copy the input, which the brief forbids.
 - **Sources consulted:** Assignment brief, Task 1: "If limited skip connections are used, their purpose and effect must be investigated and justified in the report."
-- **Experiment and numbers:** TODO after the Kaggle run: test PSNR/SSIM per condition for `task1_udae` against `task1_udae_skip`. The skip model has 1,939,619 parameters at (c = 32, latent 32).
+- **Experiment and numbers:** Test set (36,690 items), mean over corrupted inputs: no skip PSNR 23.96 dB / SSIM 0.758; with the 16 x 16 skip PSNR 26.77 dB / SSIM 0.852. On clean inputs: 25.21 vs 29.96 dB. The skip helps most where fine detail matters (clean, mild blur, salt-and-pepper) and least on large occlusions (high: 19.99 vs 20.45 dB). Tables: `report/results/task1_udae_test_metrics.csv`, `task1_udae_skip_test_metrics.csv`.
 - **Choice and why:** Main model without skips; the skip variant is reported as an ablation so its effect is measured, not assumed.
 - **Report section it feeds:** Task 1 results, ablation.
 
@@ -179,7 +179,7 @@ Copy this block for each new decision.
   - A fixed objective with the brief's starting weights (0.8 / 0.2): the same yardstick for every trial; combines reconstruction quality and structural similarity as the brief requires. A trial with alpha near 0.8 trains on almost what is measured, which may favour it slightly.
   - Multi-objective search (L1 and SSIM separately): no weighting needed, but returns a Pareto front instead of one best trial, which the brief asks for.
 - **Sources consulted:** Assignment brief, Task 1: the study must cover learning rate, batch size, bottleneck dimension, encoder channels, dropout and alpha, and "the validation objective should combine reconstruction quality and structural similarity". To read first-hand and cite: Akiba et al., "Optuna: A Next-generation Hyperparameter Optimization Framework" (KDD 2019), and the Optuna documentation on `TPESampler` and `MedianPruner`.
-- **Experiment and numbers:** TODO after the Kaggle run: number of completed and pruned trials, best trial, best configuration. PSNR, SSIM and L1 are stored with every trial as user attributes.
+- **Experiment and numbers:** Kaggle run (2026-10-03): 30 trials, 19 completed and 11 pruned (trials took about 2-6 minutes each). Best: trial 20, validation objective 0.1192 (PSNR 20.96 dB, SSIM 0.672 after 10 epochs), with lr 6.3e-4, batch size 32, bottleneck 8 x 8 x 128, base channels 64, dropout 0.035, alpha 0.552. Saved in `optuna_studies/task1_udae.db` and `configs/task1_udae_best.yaml`. The final 80-epoch training took 43 minutes.
 - **Choice and why:** Fixed 0.8 / 0.2 objective with TPE and median pruning. One comparable number per trial, with the plain metrics kept alongside so the choice can be re-examined.
 - **Report section it feeds:** Task 1 methodology, Optuna search design.
 
