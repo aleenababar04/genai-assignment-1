@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RestoreLab - Hard-Routed Restoration</title>
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#ffcafe",
+            "surface-container-low": "#f2f3ff",
+            "secondary-fixed": "#acedff",
+            "surface-container": "#eaedff",
+            "surface-dim": "#d2d9f4",
+            "tertiary-fixed-dim": "#fbabff",
+            "on-surface": "#131b2e",
+            "on-secondary-fixed": "#001f26",
+            "on-secondary-container": "#006172",
+            "on-primary-container": "#dad7ff",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed-variant": "#7c008e",
+            "on-primary": "#ffffff",
+            "tertiary-container": "#a500bd",
+            "error": "#ba1a1a",
+            "primary-fixed": "#e2dfff",
+            "secondary": "#00687a",
+            "on-tertiary": "#ffffff",
+            "inverse-primary": "#c3c0ff",
+            "secondary-container": "#57dffe",
+            "tertiary-fixed": "#ffd6fd",
+            "outline-variant": "#c7c4d8",
+            "surface-variant": "#dae2fd",
+            "surface-container-highest": "#dae2fd",
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#283044",
+            "surface": "#faf8ff",
+            "on-tertiary-fixed": "#36003e",
+            "on-secondary": "#ffffff",
+            "error-container": "#ffdad6",
+            "secondary-fixed-dim": "#4cd7f6",
+            "primary-fixed-dim": "#c3c0ff",
+            "on-primary-fixed-variant": "#3323cc",
+            "on-secondary-fixed-variant": "#004e5c",
+            "background": "#faf8ff",
+            "outline": "#777587",
+            "surface-tint": "#4d44e3",
+            "tertiary": "#7f0091",
+            "on-background": "#131b2e",
+            "inverse-on-surface": "#eef0ff",
+            "primary": "#3525cd",
+            "on-primary-fixed": "#0f0069",
+            "on-surface-variant": "#464555",
+            "surface-bright": "#faf8ff",
+            "primary-container": "#4f46e5",
+            "surface-container-high": "#e2e7ff",
+            "on-error-container": "#93000a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "margin": "1.5rem",
+            "gutter-compact": "0.5rem",
+            "margin-panel": "1rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem",
+            "space-xl": "2rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "label-mono-md": [
+              "JetBrains Mono"
+            ],
+            "label-mono-lg": [
+              "JetBrains Mono"
+            ],
+            "body-sm": [
+              "Inter"
+            ],
+            "headline-sm": [
+              "Inter"
+            ],
+            "headline-xl": [
+              "Inter"
+            ],
+            "label-mono-sm": [
+              "JetBrains Mono"
+            ],
+            "body-md": [
+              "Inter"
+            ],
+            "body-lg": [
+              "Inter"
+            ],
+            "headline-lg": [
+              "Inter"
+            ],
+            "headline-md": [
+              "Inter"
+            ],
+            "label-ui": [
+              "Inter"
+            ]
+          },
+          "fontSize": {
+            "label-mono-md": [
+              "11px",
+              {
+                "lineHeight": "16px",
+                "letterSpacing": "0.02em",
+                "fontWeight": "500"
+              }
+            ],
+            "label-mono-lg": [
+              "13px",
+              {
+                "lineHeight": "18px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "500"
+              }
+            ],
+            "body-sm": [
+              "12px",
+              {
+                "lineHeight": "16px",
+                "letterSpacing": "0em",
+                "fontWeight": "400"
+              }
+            ],
+            "headline-sm": [
+              "15px",
+              {
+                "lineHeight": "20px",
+                "letterSpacing": "0em",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-xl": [
+              "30px",
+              {
+                "lineHeight": "36px",
+                "letterSpacing": "-0.02em",
+                "fontWeight": "600"
+              }
+            ],
+            "label-mono-sm": [
+              "10px",
+              {
+                "lineHeight": "14px",
+                "letterSpacing": "0.04em",
+                "fontWeight": "400"
+              }
+            ],
+            "body-md": [
+              "13px",
+              {
+                "lineHeight": "18px",
+                "letterSpacing": "0em",
+                "fontWeight": "400"
+              }
+            ],
+            "body-lg": [
+              "15px",
+              {
+                "lineHeight": "22px",
+                "letterSpacing": "0em",
+                "fontWeight": "400"
+              }
+            ],
+            "headline-lg": [
+              "22px",
+              {
+                "lineHeight": "28px",
+                "letterSpacing": "-0.015em",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-md": [
+              "18px",
+              {
+                "lineHeight": "24px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "600"
+              }
+            ],
+            "label-ui": [
+              "11px",
+              {
+                "lineHeight": "14px",
+                "letterSpacing": "0.04em",
+                "fontWeight": "500"
+              }
+            ]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased h-screen flex flex-col overflow-hidden select-none">
+<!-- ==================== TOP NAVIGATION BAR ==================== -->
+<header class="w-full flex items-center justify-between px-6 bg-surface-container-lowest border-b border-outline-variant z-40 h-14 shadow-sm shrink-0">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">csv</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">RestoreLab</span>
+</div>
+<!-- Navigation Links from JSON: ["Studio", "Pipelines", "Evaluation", "Datasets", "Design System"] -->
+<nav class="hidden md:flex items-center space-x-6 text-label-ui font-label-ui">
+<!-- Studio is ACTIVE -->
+<a class="border-b-2 border-primary text-primary font-semibold py-4 flex items-center gap-1.5 transition-colors" href="#">
+<span>Studio</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Pipelines</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Evaluation</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Datasets</a>
+<a class="text-on-surface-variant hover:text-on-surface py-4 transition-colors" href="#">Design System</a>
+</nav>
+</div>
+<!-- Trailing Actions from JSON -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 border-r border-outline-variant pr-3">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Console">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Calibration">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Help Docs">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+</button>
+</div>
+<button class="px-3 py-1.5 rounded text-label-ui font-label-ui font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
+        Docs
+      </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant text-label-ui font-label-ui font-medium text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">save</span>
+<span>Export Config</span>
+</button>
+<div class="w-7 h-7 rounded-full bg-surface-variant flex items-center justify-center text-label-mono-sm font-label-mono-sm font-semibold text-primary overflow-hidden ml-1 border border-outline-variant" title="Lead Biometrics Researcher Avatar">
+        LR
+      </div>
+</div>
+</header>
+<!-- ==================== MAIN WORKSPACE SHELL ==================== -->
+<div class="flex flex-1 overflow-hidden">
+<!-- ==================== LEFT SIDEBAR (264px) ==================== -->
+<aside class="w-[264px] bg-surface-container-lowest border-r border-outline-variant flex flex-col justify-between shrink-0 select-none">
+<div class="flex flex-col">
+<!-- Logo & Context Subheader -->
+<div class="p-4 border-b border-outline-variant flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">science</span>
+</div>
+<div>
+<div class="text-headline-sm font-headline-sm font-semibold text-on-surface leading-tight">RESTORELAB DS</div>
+<div class="text-label-mono-sm font-label-mono-sm text-outline">v2.4.0 • Calibrated Engine</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="p-3 space-y-1">
+<div class="px-3 py-1.5 text-label-mono-sm font-label-mono-sm text-outline uppercase tracking-wider font-semibold">
+            Pipelines
+          </div>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-body-sm font-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">filter_center_focus</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-body-sm font-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">magic_button</span>
+<span>Universal Restoration</span>
+</a>
+<!-- ACTIVE ITEM -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-body-sm font-body-sm font-semibold bg-surface-container-high text-primary border-l-2 border-primary" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">alt_route</span>
+<span>Hard-Routed Restoration</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-body-sm font-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+<span>Soft Mixture-of-Experts</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-body-sm font-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">brush</span>
+<span>Face-to-Sketch Generator</span>
+</a>
+</div>
+<!-- Model Topology Panel -->
+<div class="mx-3 mt-2 p-3 bg-surface-container-low rounded-xl border border-outline-variant space-y-2">
+<div class="flex items-center justify-between text-label-ui font-label-ui font-semibold text-on-surface">
+<span>Model Topology</span>
+<span class="text-label-mono-sm font-label-mono-sm px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-medium">FP16</span>
+</div>
+<div class="space-y-1.5 text-label-mono-sm font-label-mono-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>Classifier:</span>
+<span class="text-on-surface font-medium">ResNet-18</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Autoencoders:</span>
+<span class="text-on-surface font-medium">4x Specialist AE</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Latent Grid:</span>
+<span class="text-on-surface font-medium">128×128×3</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Inference Engine:</span>
+<span class="text-on-surface font-medium">ONNX TensorRT</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom System Status Card -->
+<div class="p-3 border-t border-outline-variant">
+<div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-label-ui font-label-ui font-semibold text-on-surface">Backend online</span>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm text-outline">PORT 8443</span>
+</div>
+<div class="space-y-1 text-label-mono-sm font-label-mono-sm text-on-surface-variant">
+<div class="flex items-center justify-between">
+<span>ONNX models:</span>
+<span class="text-on-surface font-medium">4 of 4 loaded</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Last inference:</span>
+<span class="text-outline italic">none yet</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- ==================== CENTRAL WORKSPACE ==================== -->
+<main class="flex-1 bg-surface flex flex-col overflow-y-auto">
+<!-- Page Header Banner -->
+<div class="px-8 py-5 border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<div class="flex items-center justify-between max-w-7xl mx-auto">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-headline-lg font-headline-lg font-bold text-on-surface tracking-tight">Hard-Routed Restoration</h1>
+<span class="px-2.5 py-0.5 rounded-full text-label-mono-sm font-label-mono-sm font-semibold bg-surface-container-high text-primary border border-primary-container/20">
+                PIPELINE 02: HARD ROUTING
+              </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">
+              A classifier predicts the corruption and routes the image to one specialist autoencoder. Optimized for 128×128 latent representations.
+            </p>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-label-ui font-label-ui text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Session Log</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-label-ui font-label-ui text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Reset Graph</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Canvas Grid (2 Columns) -->
+<div class="p-8 max-w-7xl mx-auto w-full flex-1">
+<div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
+<!-- ==================== COLUMN 1: INPUT CARD (340px) ==================== -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6 space-y-6">
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">input</span>
+<h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Input Tensor</h2>
+</div>
+<span class="text-label-mono-sm font-label-mono-sm px-2 py-0.5 rounded bg-surface-container-low text-outline font-medium">128 × 128 px</span>
+</div>
+<!-- Drag-and-drop zone with Upload Error State -->
+<div>
+<div class="border-2 border-dashed border-red-400 bg-red-50/80 rounded-xl p-5 flex flex-col items-center text-center transition-all">
+<div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2.5">
+<span class="material-symbols-outlined text-[24px]">warning</span>
+</div>
+<!-- Rejected File Badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-md border border-red-200 shadow-xs mb-2">
+<span class="material-symbols-outlined text-[15px] text-red-500">description</span>
+<span class="text-label-mono-sm font-label-mono-sm font-medium text-slate-800">notes.pdf</span>
+<span class="text-label-mono-sm font-label-mono-sm text-slate-400">412 KB</span>
+</div>
+<!-- Explicit Error Message -->
+<p class="text-body-sm font-body-sm font-bold text-red-600 mb-1">
+                  Unsupported file type. Upload a PNG or JPG image.
+                </p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">
+                  Target format is 128×128 RGB raster matrix.
+                </p>
+<!-- Recovery action -->
+<button class="mt-3 text-body-sm font-body-sm font-medium text-primary underline underline-offset-4 hover:text-primary-container transition-colors">
+                  Choose another file
+                </button>
+</div>
+</div>
+<!-- "Or pick a sample" Row -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-ui font-label-ui font-semibold text-on-surface">Or pick a sample</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline">CelebA-HQ 128px</span>
+</div>
+<div class="grid grid-cols-6 gap-2">
+<!-- Sample 1 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 01 - Natural Face">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A calibrated, high-definition studio portrait of a woman looking directly at the camera, cropped to a 128x128 facial region. High-key neutral laboratory lighting on a pure minimalist background with subtle optical sharpness. Natural skin textures and cool indigo tonal grade consistent with scientific biometrics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCjsWNxkth52C7pdr7uZCN42LUEHKqavcxZQkCmcm3LtwQV7MNT29HMsf-WqDxceTdZ1Cz9qkzs35EFXtin-GVMWxHwTL5fbdCTVicVap1V-TKRvOgsMSSWmye4_pivdPhRiRktCgKMlwo2l076LRFGfOFbpZuIri1ynW-danhkmsOMcdQXEavMnYuDeQfDp0_lFU_QL6RsXl5i6qv0xNjuZJHiIVJ2dzKUIipQz45l6TX6mFXkYJCQA"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Sample 2 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 02 - Male Subject">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A clean biometric headshot of a male subject in neutral expression, cropped to a strict square 128x128 aspect ratio. Crisp studio lighting, clinical background, balanced contrast with cool indigo and neutral slate tones tailored for facial landmark recognition benchmarks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8plUoThOzeV1PUURupdu2xtJBlTX71LSbOTD-ozsiPtYFJR2XUetbctLm2_D6rtldX1qDYJo5OGLMwENrQXJP2uJ9DDVXzx7OtErViegVry1VtgwnKVYkcwdnln1Ggxo4jNY-6pbXZJg6tU5ADDUhmqdADSWglMrBb27fBZveWWEWnmLP64TuYm2r12j7PUNawxKb25DaWMI8MwkcTWnO9lNbxYt0wg33tMDY1f4V2C5AnziGmDyCPQ"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Sample 3 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 03 - Low Illumination">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A calibrated forensic portrait photograph of a young woman with soft rim lighting, tightly framed in a 128x128 crop. Balanced tonal dynamic range with subtle shadows, pristine laboratory precision, cool desaturated color palette suitable for synthetic restoration tasks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB530ZvdneizukW_HptPdJCVB7bl7MY02jj3k8U4FpjThrbH3WiFvMsNgm0d3dOWhontmOtXJjmexZEdtsRjBRRqfJchDffCLYiiEY1w5dtn99iOfaFMzcKVzHIW4Kt0NwU3nm-9lyu9R7gSCKUXFBIbjDuEwpy0FdxVNKoKhEqt7fPLVU9grhNXlHEhH0rWDjtZxeS0B1Bo_DDElpDtuhI7mjwUoaDMcBjhKBk7vSxDcz31f3ou3mFqw"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Sample 4 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 04 - Elderly Male">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A highly detailed biometric crop of an older male with distinguished facial structure, captured in calibrated 128x128 resolution. Uniform diffuse lighting, minimal background clutter, cold clinical aesthetic adhering to medical imaging and facial reconstruction standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjpLqSBT83DplLMCzIziTAVAmzh7XD46oWtXKXRM5R-KpyR5Mwou6zE66Zkr7ZYN9kT7pqqE7B8UcuNpFwVwZ_6dyLXhTHtMhcTYph5vKrSQqVcrkA9GbWSMbjNDt8XE94-x6sxQmPgZp7oOGmt1ptgbRmjhhGHsMBXyzLIiqP5yWHL_OowEXLsKqWmmpLoW4i-t2F2zlHZHASeT8Ok_cPIYn4PTBWANNiSssWMfKkU2opcZHAc1sm4Q"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Sample 5 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 05 - High Symmetry">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A forensic studio portrait photograph of an athletic female face framed precisely in 128x128 pixels. Balanced high-key optical illumination, sharp biometric edge detail, neutral cool grey-indigo atmosphere designed for machine vision autoencoders." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHt9OhiHc5d4l6SXZPHGApgi7zc8TxTk1KbN3cpSI4DxHB0aQhpwlQsJjosmdNbH-OSA9S6GZh7sgJjLrzK1V870v32JubNtuXFsmuVZpv17n6bZifTVixgYCNGw83bHyGwPszkvRRFzhv40ZrkrHokOR5iHQpS5aBgdOE_SSyXoGC6KP2yrHdyWaCoWXmzJgMP6dM-t6c0jAONKOIkOl22BLYezJZnkKhlQ0iQNCI7v1sEQhX9rK28w"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Sample 6 -->
+<button class="relative rounded-lg overflow-hidden border border-outline-variant hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aspect-square group transition-all" title="Sample 06 - Frontal Alignment">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150" data-alt="A forensic facial biometric benchmark image of an adult subject looking forward, perfectly centered in a 128x128 frame. Bright clinical ambient light, neutral palette with slight cyan and indigo shadows, showcasing high-fidelity computational imaging quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuClDgqWVTYakFzbJ7y1CgvrwpspOIHdv5DP9mmpc8TYYZDath1FIOHGhp4UBT0jN1it7DGfCw4p_GNqKu02F0YyQKvEUnzqqiaOTQRtiE6muqx4hUUOTmIfHXTy4XTZHbSAQ8K3zKSMJaeoP9HJR8r1XOKjWf0GJ2Dl1CTnVxGBAci1Uo8QtjxvRtIDzSwCuY5k0Ka2iazW3ULVX3ogkgnguFzD4aT1GJkmYiROj-cF3x42mny9s_T8sg"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+</div>
+</div>
+<!-- "Corruption type" (2x2 Grid) -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-ui font-label-ui font-semibold text-on-surface">Corruption Type</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline">Simulated Test</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<!-- None (Selected) -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border-2 border-primary bg-primary-fixed/30 text-left transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+<div>
+<div class="text-body-sm font-body-sm font-semibold text-primary">None</div>
+<div class="text-label-mono-sm font-label-mono-sm text-on-surface-variant">Ground Truth</div>
+</div>
+</button>
+<!-- Salt-and-pepper noise -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-left transition-all">
+<span class="material-symbols-outlined text-[18px] text-outline">grain</span>
+<div>
+<div class="text-body-sm font-body-sm font-medium text-on-surface">Salt &amp; Pepper</div>
+<div class="text-label-mono-sm font-label-mono-sm text-outline">Impulse Noise</div>
+</div>
+</button>
+<!-- Gaussian blur -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-left transition-all">
+<span class="material-symbols-outlined text-[18px] text-outline">blur_on</span>
+<div>
+<div class="text-body-sm font-body-sm font-medium text-on-surface">Gaussian Blur</div>
+<div class="text-label-mono-sm font-label-mono-sm text-outline">σ = 1.5 - 3.0</div>
+</div>
+</button>
+<!-- Rectangular occlusion -->
+<button class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-left transition-all">
+<span class="material-symbols-outlined text-[18px] text-outline">crop_portrait</span>
+<div>
+<div class="text-body-sm font-body-sm font-medium text-on-surface">Occlusion</div>
+<div class="text-label-mono-sm font-label-mono-sm text-outline">Mask 32×32</div>
+</div>
+</button>
+</div>
+</div>
+<!-- "Severity" Segmented Control (Disabled) -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-ui font-label-ui font-semibold text-outline">Corruption Severity</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline">Disabled</span>
+</div>
+<div class="grid grid-cols-3 p-1 bg-surface-container-low rounded-lg border border-outline-variant/60 opacity-50 cursor-not-allowed">
+<button class="py-1.5 text-body-sm font-body-sm font-medium text-outline rounded text-center cursor-not-allowed" disabled="">Low</button>
+<button class="py-1.5 text-body-sm font-body-sm font-medium text-outline rounded text-center cursor-not-allowed" disabled="">Medium</button>
+<button class="py-1.5 text-body-sm font-body-sm font-medium text-outline rounded text-center cursor-not-allowed" disabled="">High</button>
+</div>
+</div>
+<!-- Full-width Restore Button (Disabled) -->
+<button class="w-full py-2.5 rounded-lg bg-surface-container-high border border-outline-variant text-outline font-headline-sm text-headline-sm font-semibold cursor-not-allowed flex items-center justify-center gap-2 transition-all" disabled="">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+<span>Restore</span>
+</button>
+</div>
+<!-- ==================== COLUMN 2: TWO STACKED EMPTY STATE CARDS ==================== -->
+<div class="space-y-6">
+<!-- CARD 1: Classifier Routing Probabilities -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-5">
+<div>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Classifier Routing Probabilities</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Confidence distribution across corruptions inferred by ResNet-18 router</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-mono-sm font-label-mono-sm text-outline">Classification Latency:</span>
+<span class="text-label-mono-md font-label-mono-md px-2 py-0.5 rounded bg-surface-container-low text-outline font-semibold">— ms</span>
+</div>
+</div>
+<!-- 4 Empty Grey Bar Tracks -->
+<div class="space-y-4">
+<!-- Track 1: Clean -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+<span class="font-medium text-on-surface">Clean</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline font-normal">Route: Identity / Bypass AE</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md text-outline font-medium">—</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-slate-300 w-0"></div>
+</div>
+</div>
+<!-- Track 2: Salt-and-pepper -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+<span class="font-medium text-on-surface">Salt-and-pepper</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline font-normal">Route: Median Filter AE</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md text-outline font-medium">—</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-slate-300 w-0"></div>
+</div>
+</div>
+<!-- Track 3: Blur -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+<span class="font-medium text-on-surface">Blur</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline font-normal">Route: Deblur Deconvolution AE</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md text-outline font-medium">—</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-slate-300 w-0"></div>
+</div>
+</div>
+<!-- Track 4: Occlusion -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+<span class="font-medium text-on-surface">Occlusion</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline font-normal">Route: Inpainting Context AE</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md text-outline font-medium">—</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-slate-300 w-0"></div>
+</div>
+</div>
+</div>
+<!-- Note on Thresholding -->
+<div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between text-label-mono-sm font-label-mono-sm text-outline">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                  Hard gate decision threshold: argmax(p_k) ≥ 0.70
+                </span>
+<span>Active Specialist: None assigned</span>
+</div>
+</div>
+<!-- CARD 2: Restoration Inspection (Empty State) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6 flex flex-col justify-between">
+<div>
+<!-- Header -->
+<div class="flex items-center justify-between border-b border-outline-variant/60 pb-3 mb-5">
+<div>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Restoration Inspection</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Split tensor comparison at calibrated 1:1 latent resolution</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-mono-sm font-label-mono-sm text-outline">Inference time:</span>
+<span class="text-label-mono-md font-label-mono-md px-2.5 py-0.5 rounded bg-surface-container-low text-outline font-semibold">— ms</span>
+</div>
+</div>
+<!-- Inspection Area: Two 288px Square Placeholders -->
+<div class="relative py-4 flex flex-col items-center">
+<div class="flex flex-wrap items-center justify-center gap-6 w-full">
+<!-- Left Square: Input Image -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-[288px] h-[288px] border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center bg-surface-container-low/50 relative overflow-hidden transition-all">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-2">
+<span class="material-symbols-outlined text-[24px]">broken_image</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md font-semibold text-outline">x_corrupted</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline/80 mt-1">128 × 128 × 3</span>
+<!-- Corner Calibration Marks -->
+<div class="absolute top-2 left-2 w-2 h-2 border-t-2 border-l-2 border-outline-variant"></div>
+<div class="absolute top-2 right-2 w-2 h-2 border-t-2 border-r-2 border-outline-variant"></div>
+<div class="absolute bottom-2 left-2 w-2 h-2 border-b-2 border-l-2 border-outline-variant"></div>
+<div class="absolute bottom-2 right-2 w-2 h-2 border-b-2 border-r-2 border-outline-variant"></div>
+</div>
+<span class="text-label-ui font-label-ui font-medium text-on-surface-variant">Input image</span>
+</div>
+<!-- Transfer Arrow Indicator -->
+<div class="hidden xl:flex flex-col items-center text-outline">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+<span class="text-label-mono-sm font-label-mono-sm uppercase tracking-wider">Route</span>
+</div>
+<!-- Right Square: Reconstructed Output -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-[288px] h-[288px] border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center bg-surface-container-low/50 relative overflow-hidden transition-all">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-2">
+<span class="material-symbols-outlined text-[24px]">auto_fix_normal</span>
+</div>
+<span class="text-label-mono-md font-label-mono-md font-semibold text-outline">x̂_restored</span>
+<span class="text-label-mono-sm font-label-mono-sm text-outline/80 mt-1">128 × 128 × 3</span>
+<!-- Corner Calibration Marks -->
+<div class="absolute top-2 left-2 w-2 h-2 border-t-2 border-l-2 border-outline-variant"></div>
+<div class="absolute top-2 right-2 w-2 h-2 border-t-2 border-r-2 border-outline-variant"></div>
+<div class="absolute bottom-2 left-2 w-2 h-2 border-b-2 border-l-2 border-outline-variant"></div>
+<div class="absolute bottom-2 right-2 w-2 h-2 border-b-2 border-r-2 border-outline-variant"></div>
+</div>
+<span class="text-label-ui font-label-ui font-medium text-on-surface-variant">Reconstructed output</span>
+</div>
+</div>
+<!-- Centred grey overlay text across inspection area -->
+<div class="mt-5 flex items-center gap-2 text-body-sm font-body-sm text-outline bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-[16px]">cloud_upload</span>
+<span>No result yet. Upload an image or pick a sample to begin.</span>
+</div>
+</div>
+<!-- Metrics Grid (Empty State) -->
+<div class="grid grid-cols-4 gap-3 my-4">
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/60 text-center">
+<div class="text-label-mono-sm font-label-mono-sm text-outline">PSNR (dB)</div>
+<div class="text-label-mono-lg font-label-mono-lg font-semibold text-outline mt-0.5">—</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/60 text-center">
+<div class="text-label-mono-sm font-label-mono-sm text-outline">SSIM</div>
+<div class="text-label-mono-lg font-label-mono-lg font-semibold text-outline mt-0.5">—</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/60 text-center">
+<div class="text-label-mono-sm font-label-mono-sm text-outline">L1 Latent Loss</div>
+<div class="text-label-mono-lg font-label-mono-lg font-semibold text-outline mt-0.5">—</div>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/60 text-center">
+<div class="text-label-mono-sm font-label-mono-sm text-outline">VRAM Usage</div>
+<div class="text-label-mono-lg font-label-mono-lg font-semibold text-outline mt-0.5">342 MB</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Buttons & Telemetry -->
+<div class="pt-4 border-t border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-low text-outline text-label-ui font-label-ui font-medium cursor-not-allowed flex items-center gap-1.5 opacity-60" disabled="">
+<span class="material-symbols-outlined text-[16px]">compare</span>
+<span>Compare Toggle</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-low text-outline text-label-ui font-label-ui font-medium cursor-not-allowed flex items-center gap-1.5 opacity-60" disabled="">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span>Copy Tensor</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high border border-outline-variant text-outline text-label-ui font-label-ui font-medium cursor-not-allowed flex items-center gap-1.5 opacity-60" disabled="">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Download result</span>
+</button>
+</div>
+<div class="text-label-mono-sm font-label-mono-sm text-outline flex items-center gap-3">
+<span>DISPATCH_STATE: IDLE</span>
+<span>CUDA: READY</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
