@@ -336,6 +336,17 @@ Copy this block for each new decision.
 - **Choice and why:** Paired L1/SSIM objective, because it is meaningful with a small validation set and is the same kind of measure used in Tasks 1-3.
 - **Report section it feeds:** Task 4 methodology, Optuna search design and limitations.
 
+### Compute budget: smaller searches for Tasks 2-4
+
+- **Date:** 2026-10-03
+- **Decision:** Reduce the Optuna budgets and final schedules to fit the remaining time (about 24 hours to the deadline) and the Kaggle GPU quota. Classifier: 12 trials x 6 epochs (was 25 x 8), final 25 epochs (was 40). Specialists: 10 trials x 5 epochs (was 20 x 8), final 40 epochs (was 60). Mixture: 8 trials x (1 warm-up + 4 fine-tune) epochs (was 20 x (2 + 6)), final 2 + 15 epochs (was 3 + 25). GAN: 8 trials x 15 epochs (was 12 x 25), final 100 epochs (was 200), batch size 1 removed from the search. Pruner start-up and warm-up shortened accordingly. Task 1 kept its original budget (30 trials x 10 epochs, final 80 epochs), which had already run.
+- **Question:** How can all four searches finish in time without dropping any required step?
+- **Alternatives considered:** keep the budgets and risk not finishing; skip Optuna for some models (not allowed by the brief); shrink the searches (chosen). Every required element remains: an Optuna study per task over the required hyperparameters, and a final retraining longer than the trials.
+- **Sources consulted:** Measured on Kaggle for Task 1: Optuna trials took about 2-6 minutes each (10 epochs) and the 80-epoch final training took 43 minutes. From the configured work, Task 2 at the old budget was estimated at roughly 6-7 hours.
+- **Experiment and numbers:** TODO: record the actual run times of each Kaggle notebook.
+- **Choice and why:** Smaller searches. Fewer trials explore the search space less thoroughly; this is stated as a limitation in the report.
+- **Report section it feeds:** Experimental setup; limitations.
+
 ## Upcoming decisions
 
 Empty headings for decisions that still have to be made. Fill each one in with the template above when the decision is taken.

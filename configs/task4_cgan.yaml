@@ -15,20 +15,20 @@ adam_betas: [0.5, 0.999]
 objective_l1_weight: 0.5
 
 optuna:
-  n_trials: 12
-  epochs_per_trial: 25              # shorter than the final schedule, as the brief allows
-  pruner_startup_trials: 4
-  pruner_warmup_epochs: 10
+  n_trials: 8
+  epochs_per_trial: 15              # shorter than the final schedule, as the brief allows
+  pruner_startup_trials: 3
+  pruner_warmup_epochs: 6
 
 final:
-  epochs: 200
+  epochs: 100
   sample_every: 10                  # log the same validation photos every N epochs
   samples_per_style: 2
 
 search_space:
   lr_g: [0.00005, 0.0005]           # generator learning rate, log-uniform
   lr_d: [0.00005, 0.0005]           # discriminator learning rate, log-uniform
-  batch_size: [1, 4, 8, 16]
+  batch_size: [4, 8, 16]            # batch size 1 removed: too slow for the time budget
   base_channels: [32, 48, 64]
   dropout: [0.0, 0.5]
   style_dim: [8, 16, 32]

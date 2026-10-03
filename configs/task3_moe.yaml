@@ -21,15 +21,15 @@ warmup:
 collapse_threshold: 0.05
 
 optuna:
-  n_trials: 20
-  warmup_epochs: 2
-  finetune_epochs: 6
-  pruner_startup_trials: 5
-  pruner_warmup_epochs: 4
+  n_trials: 8
+  warmup_epochs: 1
+  finetune_epochs: 4
+  pruner_startup_trials: 3
+  pruner_warmup_epochs: 2
 
 final:
-  warmup_epochs: 3
-  finetune_epochs: 25
+  warmup_epochs: 2
+  finetune_epochs: 15
   sample_every: 5
   num_samples: 8
 

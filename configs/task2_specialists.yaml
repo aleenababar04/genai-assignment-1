@@ -10,13 +10,13 @@ checkpoint_prefix: task2_specialist    # checkpoints/task2_specialist_<name>.pt
 objective_alpha: 0.8
 
 optuna:
-  n_trials: 20
-  epochs_per_trial: 8      # each trial trains all three specialists for this many epochs
-  pruner_startup_trials: 5
-  pruner_warmup_epochs: 3
+  n_trials: 10
+  epochs_per_trial: 5      # each trial trains all three specialists for this many epochs
+  pruner_startup_trials: 3
+  pruner_warmup_epochs: 2
 
 final:
-  epochs: 60
+  epochs: 40
   sample_every: 5
   num_samples: 8
 

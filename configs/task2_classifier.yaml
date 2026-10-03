@@ -6,13 +6,13 @@ wandb_group: task2-classifier
 checkpoint_name: task2_classifier   # checkpoints/task2_classifier.pt
 
 optuna:
-  n_trials: 25
-  epochs_per_trial: 8
-  pruner_startup_trials: 5
-  pruner_warmup_epochs: 3
+  n_trials: 12
+  epochs_per_trial: 6
+  pruner_startup_trials: 3
+  pruner_warmup_epochs: 2
 
 final:
-  epochs: 40
+  epochs: 25
 
 # Ranges searched by Optuna. Batch sizes must be multiples of 4 (balanced batches).
 search_space:
