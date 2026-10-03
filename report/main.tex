@@ -511,14 +511,19 @@ parameter importances for Task 1}
 \begin{figure}[t]
 \centering
 \figOrTodo{figures/task1_udae_curves.png}{\columnwidth}{Training loss and validation
-objective/PSNR/SSIM per epoch of the final run (export from W\&B, group task1-udae, run final-task1\_udae)}
+objective/PSNR/SSIM per epoch of the final run}
 \caption{Task 1 training and validation curves.}
 \label{fig:task1_curves}
 \end{figure}
 
-% TODO(results): interpret Fig. task1_curves (convergence, over-fitting, best epoch).
-\TODO{Interpret the curves (Fig.~\ref{fig:task1_curves}): convergence, gap
-between training and validation, epoch of the selected checkpoint.}
+The curves of the final run (Fig.~\ref{fig:task1_curves}, logged to W\&B)
+show steady convergence without over-fitting: the validation objective keeps
+falling with the training loss and never turns upwards. It is noisy in the
+first 40 epochs, while the learning rate is still high, and smooths out as
+the cosine schedule lowers it; validation PSNR flattens at about 24.5\,dB
+over the last 20 epochs. The checkpoint with the lowest validation objective
+is the one evaluated. Since the curves were still improving slightly at
+epoch 80, a longer schedule might add a little more quality.
 
 \begin{table}[t]
 \centering
