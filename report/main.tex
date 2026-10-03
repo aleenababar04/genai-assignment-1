@@ -2145,6 +2145,44 @@ arXiv, the NeurIPS proceedings pages, Distill and the FS2K repository.
 statement against the code and the decision log, read every cited work
 first-hand, and record the corrections made here and in
 \file{docs/ai_use_log.md}.}
+\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
+\emph{Used for:} restyling the React frontend to match the Google Stitch
+screens; placeholders in the Stitch mock-ups (PSNR and VRAM badges, made-up
+latencies, a ``4 of 4 models'' count) were replaced by real backend values or
+removed.
+\emph{Verification:} the subagent compared headless-browser screenshots of
+every page with the Stitch images in two rounds and ran a real Universal
+Restoration request; the build passed and the rebuilt Docker stack served the
+new interface.
+% TODO: Pending item from docs/ai_use_log.md.
+\TODO{Pending: own visual check of every page.}
+
+\item \textbf{2026-10-03, Claude Code (Claude Opus).}
+\emph{Used for:} putting the Kaggle results into the repository and writing
+the results sections of this paper (Tasks 1--4, the comparison of Tasks 1--3,
+abstract, limitations, conclusion), and the scripts that plot the Optuna
+studies and the W\&B training curves.
+\emph{Verification:} every number in the tables was copied from the result
+files and the Optuna databases and can be printed again with
+\file{scripts/show\_results.py}; the tool viewed the figures and wrote its
+descriptions of them into the text. The Task~4 test evaluation was rerun
+locally after the Kaggle run failed on a missing cache file. A statement about
+the Kaggle GPU model that the tool had written without evidence was removed.
+% TODO: Pending item from docs/ai_use_log.md.
+\TODO{Pending: own check of each interpretive sentence against the figures and tables; Kaggle GPU model and run times.}
+
+\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
+\emph{Used for:} writing the student's study documents and helper scripts
+(\file{docs/STUDY_GUIDE.md}, \file{docs/testing\_and\_outputs\_guide.md},
+\file{scripts/show\_results.py}, \file{build\_gallery.py},
+\file{demo\_temperature.py}).
+\emph{Verification:} a second subagent compared every claim with the code,
+configuration files, result files and Optuna databases and corrected five
+errors; six further rewordings it suggested were applied. It could not read
+the assignment PDF and could not verify run times or the Kaggle GPU. The
+scripts were run and their output compared with the tables in this paper.
+% TODO: Pending item from docs/ai_use_log.md.
+\TODO{Pending: own reading of the guides.}
 \end{enumerate}
 
 \end{document}
