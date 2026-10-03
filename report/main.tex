@@ -76,10 +76,15 @@ discriminator that translates FS2K face photographs into sketches in one of
 three styles. Every model is tuned with Optuna, tracked in Weights \&
 Biases, exported to ONNX and served by a FastAPI backend to a React
 application that runs in Docker containers.
-% TODO(results): one or two sentences with the headline test numbers of each task.
-\TODO{Headline results: test PSNR/SSIM of Tasks 1--3 on corrupted inputs,
-classifier macro-F1, oracle vs.\ predicted routing gap, Task~4 test SSIM;
-fill in from \file{report/results/*.csv} once evaluation has run.}
+On 33,021 corrupted test images the three restoration systems raise PSNR
+from 19.3\,dB to 24.0, 23.6 and 23.7\,dB respectively; the universal model
+degrades clean inputs to 25.2\,dB, whereas hard routing (classifier
+macro-F1 0.994, predicted routing within 0.01\,dB of oracle routing) passes
+them through unchanged and the soft mixture keeps them almost intact. The
+learned gate routes each corruption to its expert and shares the weight with
+the identity branch for mild degradations. The face-to-sketch generator
+reaches a test SSIM of 0.47 and visibly changes its drawing style with the
+condition.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -1082,18 +1087,19 @@ are therefore also kept in evaluation mode; tests confirm that they receive
 no gradients and keep their batch-normalisation statistics. After the
 warm-up all parameters are unfrozen and fine-tuned jointly with a smaller,
 Optuna-selected learning rate and a cosine schedule. Batches contain 32
-images (8 per class). The final run uses 3 warm-up and 25 fine-tuning
-epochs; each epoch is validated on the balanced validation manifest with
+images (8 per class). The final run uses 2 warm-up and 15 fine-tuning
+epochs (reduced from 3 and 25 for time); each epoch is validated on the balanced validation manifest with
 Eq.~\eqref{eq:val_obj}, and the gate accuracy and mean branch weights are logged.
 
 \subsection{Optuna search design}
-Twenty trials of 2 warm-up and 6 fine-tuning epochs search the fine-tuning
+Eight trials of 1 warm-up and 4 fine-tuning epochs (reduced from twenty
+trials of 2 and 6 for time) search the fine-tuning
 learning rate, $\tau$, $\lambda_c$, $\lambda_b$ and $\lambda_1$
 (Table~\ref{tab:task3_space}). Trial~0 is fixed to the suggested starting
 point ($\lambda_1=0.8$, $\lambda_s=0.2$, $\lambda_c=0.1$, $\lambda_b=0.01$,
 $\tau=1$, learning rate $10^{-4}$) as a reference. Trials are scored with
 the same fixed objective as Tasks~1 and~2, which keeps the three tasks
-comparable. In addition to the median pruner (five start-up trials, four
+comparable. In addition to the median pruner (three start-up trials, two
 warm-up epochs), a trial is pruned for \emph{routing collapse} if, during
 fine-tuning, the mean weight of any branch on the balanced validation set
 falls below 0.05 (each branch would average 0.25 under perfect routing);
@@ -1108,16 +1114,14 @@ detecting collapse only after training would waste the trial's compute.
 \toprule
 Hyperparameter & Range (scale) & Selected \\
 \midrule
-Fine-tuning learning rate & $10^{-5}$--$3\times10^{-4}$ (log) & \na \\
-Temperature $\tau$ & 0.5--3.0 (linear) & \na \\
-CE weight $\lambda_c$ & 0.01--1 (log) & \na \\
-Balance weight $\lambda_b$ & 0.001--0.1 (log) & \na \\
-L1 weight $\lambda_1$ ($\lambda_s=1-\lambda_1$) & 0.5--0.95 (linear) & \na \\
+Fine-tuning learning rate & $10^{-5}$--$3\times10^{-4}$ (log) & $8.0\times10^{-5}$ \\
+Temperature $\tau$ & 0.5--3.0 (linear) & 0.85 \\
+CE weight $\lambda_c$ & 0.01--1 (log) & 0.038 \\
+Balance weight $\lambda_b$ & 0.001--0.1 (log) & 0.0054 \\
+L1 weight $\lambda_1$ ($\lambda_s=1-\lambda_1$) & 0.5--0.95 (linear) & 0.71 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from configs/task3_moe_best.yaml.
-\TODO{Fill from \file{configs/task3_moe_best.yaml}.}
 \end{table}
 
 \subsection{Gate analysis protocol}
@@ -1134,18 +1138,29 @@ These thresholds are judgement calls, stated here so that they can be
 challenged.
 
 \subsection{Results}
-% TODO(results): Task 3 Optuna outcome.
-\TODO{Report completed trials, trials pruned by the median rule and for
-routing collapse, the best trial and the selected $\tau$ and $\lambda$s
-(Table~\ref{tab:optuna_summary}); describe how routing sharpness changed with $\tau$,
-the curves across warm-up and fine-tuning (Fig.~\ref{fig:task3_curves}), and the
-restoration results per condition and severity (Table~\ref{tab:task3_results}).}
+All eight trials completed: none was pruned by the median rule and none
+showed routing collapse (the smallest mean branch weight stayed near 0.2,
+close to the balanced value of 0.25). Because the gate and experts start from
+trained models, every configuration began from a good point and the trials
+differ little; the importances are spread almost evenly over $\lambda_c$
+(0.25), $\lambda_1$ (0.22), the learning rate (0.20), $\lambda_b$ (0.17) and
+$\tau$ (0.16). The best, trial~5 (objective 0.0651), uses a slightly sharper
+temperature ($\tau=0.85$) and much smaller classification and balance
+weights than the suggested starting point ($\lambda_c=0.038$,
+$\lambda_b=0.0054$), i.e.\ it lets the reconstruction loss rather than the
+labels shape the routing. During the final run
+(Fig.~\ref{fig:task3_curves}) the validation objective keeps falling through
+fine-tuning, the gate's agreement with the true label settles near 0.95
+(below the classifier's 0.99, by design, see below) and the mean identity
+weight rises from 0.28 to about 0.33 while the blur and occlusion weights
+fall: the gate learns to send part of the weight of mildly corrupted images
+to the identity branch.
 
 \begin{figure}[t]
 \centering
-\figOrTodo{figures/task3_moe_curves.png}{\columnwidth}{Training loss terms, validation objective,
-gate accuracy and mean branch weights per epoch across warm-up and fine-tuning (export from W\&B group task3-moe)}
-\caption{Task 3 training and validation curves (the vertical line marks the end of the warm-up).}
+\figOrTodo{figures/task3_moe_curves.png}{\columnwidth}{Task 3 curves}
+\caption{Task 3 training and validation curves (epochs 1--2: warm-up with
+frozen experts; 3--17: joint fine-tuning).}
 \label{fig:task3_curves}
 \end{figure}
 
@@ -1159,24 +1174,23 @@ gate accuracy and mean branch weights per epoch across warm-up and fine-tuning (
 \toprule
 Cond. & Sev. & In PSNR & PSNR & In SSIM & SSIM & L1 \\
 \midrule
-Clean & --   & \na & \na & \na & \na & \na \\
-S\&P  & low  & \na & \na & \na & \na & \na \\
-S\&P  & med. & \na & \na & \na & \na & \na \\
-S\&P  & high & \na & \na & \na & \na & \na \\
-Blur  & low  & \na & \na & \na & \na & \na \\
-Blur  & med. & \na & \na & \na & \na & \na \\
-Blur  & high & \na & \na & \na & \na & \na \\
-Occl. & low  & \na & \na & \na & \na & \na \\
-Occl. & med. & \na & \na & \na & \na & \na \\
-Occl. & high & \na & \na & \na & \na & \na \\
+Clean & --   & $\infty$ & 62.43 & 1.000 & 0.999 & 0.001 \\
+S\&P  & low  & 20.13 & 24.97 & 0.602 & 0.764 & 0.039 \\
+S\&P  & med. & 15.87 & 24.71 & 0.340 & 0.745 & 0.041 \\
+S\&P  & high & 13.14 & 24.61 & 0.204 & 0.740 & 0.042 \\
+Blur  & low  & 32.34 & 27.49 & 0.944 & 0.856 & 0.029 \\
+Blur  & med. & 26.77 & 25.05 & 0.806 & 0.752 & 0.039 \\
+Blur  & high & 24.35 & 24.64 & 0.692 & 0.721 & 0.041 \\
+Occl. & low  & 16.70 & 20.48 & 0.861 & 0.858 & 0.040 \\
+Occl. & med. & 13.22 & 21.49 & 0.726 & 0.708 & 0.053 \\
+Occl. & high & 10.74 & 19.92 & 0.537 & 0.609 & 0.065 \\
 \midrule
-Corr. & all & \na & \na & \na & \na & \na \\
-All       & all & \na & \na & \na & \na & \na \\
+Corr. & all & 19.25 & 23.71 & 0.635 & 0.750 & 0.043 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task3_moe_test_metrics.csv.
-\TODO{Fill from \file{report/results/task3_moe_test_metrics.csv}.}
+The clean-input PSNR (62.4\,dB) is finite because the identity weight is
+close to, but never exactly, 1.
 \end{table}
 
 \begin{table}[t]
@@ -1190,21 +1204,19 @@ Ideal routing puts a weight near 1 on the matching branch.}
 \toprule
 Cond. & Sev. & $w_0$ (id.) & $w_1$ (S\&P) & $w_2$ (blur) & $w_3$ (occl.) \\
 \midrule
-Clean & --   & \na & \na & \na & \na \\
-S\&P  & low  & \na & \na & \na & \na \\
-S\&P  & med. & \na & \na & \na & \na \\
-S\&P  & high & \na & \na & \na & \na \\
-Blur  & low  & \na & \na & \na & \na \\
-Blur  & med. & \na & \na & \na & \na \\
-Blur  & high & \na & \na & \na & \na \\
-Occl. & low  & \na & \na & \na & \na \\
-Occl. & med. & \na & \na & \na & \na \\
-Occl. & high & \na & \na & \na & \na \\
+Clean & --   & \textbf{0.981} & 0.000 & 0.008 & 0.011 \\
+S\&P  & low  & 0.045 & \textbf{0.949} & 0.001 & 0.005 \\
+S\&P  & med. & 0.002 & \textbf{0.998} & 0.000 & 0.001 \\
+S\&P  & high & 0.000 & \textbf{1.000} & 0.000 & 0.000 \\
+Blur  & low  & 0.420 & 0.000 & \textbf{0.578} & 0.003 \\
+Blur  & med. & 0.121 & 0.000 & \textbf{0.878} & 0.001 \\
+Blur  & high & 0.052 & 0.000 & \textbf{0.948} & 0.000 \\
+Occl. & low  & \textbf{0.622} & 0.000 & 0.003 & 0.375 \\
+Occl. & med. & 0.127 & 0.000 & 0.001 & \textbf{0.872} \\
+Occl. & high & 0.009 & 0.000 & 0.000 & \textbf{0.991} \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task3_moe_mean_weights.csv.
-\TODO{Fill from \file{report/results/task3_moe_mean_weights.csv}.}
 \end{table}
 
 \begin{figure}[t]
@@ -1230,23 +1242,35 @@ Occl. & high & \na & \na & \na & \na \\
 \toprule
 Branch & Top-1 (\%) & Mean $w$ & Mean $w$ (other corr.) \\
 \midrule
-Identity        & \na & \na & \na \\
-Salt-and-pepper & \na & \na & \na \\
-Blur            & \na & \na & \na \\
-Occlusion       & \na & \na & \na \\
+Identity        & 21.6 & 0.238 & 0.155 \\
+Salt-and-pepper & 29.7 & 0.295 & 0.000 \\
+Blur            & 26.2 & 0.242 & 0.002 \\
+Occlusion       & 22.5 & 0.226 & 0.003 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/task3_moe_expert_health.csv; state inactive / dominating branches (or "none").
-\TODO{Fill from \file{report/results/task3_moe_expert_health.csv}; state
-which branches (if any) are inactive or dominate unrelated inputs.}
+No branch is inactive and none dominates unrelated inputs.
 \end{table}
 
-% TODO(results): interpret routing tables/figures.
-\TODO{Interpret Tables~\ref{tab:task3_weights}--\ref{tab:task3_health} and
-Figs.~\ref{fig:task3_heatmap}--\ref{fig:task3_distribution}: how sharply the
-gate routes each corruption, how this changes with severity, and whether any
-expert is inactive or dominating.}
+The gate routes every corruption to its own expert
+(Table~\ref{tab:task3_weights}, Fig.~\ref{fig:task3_heatmap}), and the
+routing becomes sharper as the corruption becomes stronger: salt-and-pepper
+receives 0.95 at the low level and 1.00 at the high level, blur 0.58, 0.88
+and 0.95, occlusion 0.38, 0.87 and 0.99. The weight that is not given to the
+expert goes almost entirely to the identity branch, never to a wrong expert:
+for low blur the gate splits 0.42/0.58 between identity and blur, and for low
+occlusion it even favours identity (0.62). This is the soft counterpart of
+the Task~2 finding that leaving a mildly corrupted image alone can beat
+sending it to an expert, and it explains why the gate's top-1 agreement with
+the true label (about 0.95) is lower than the classifier's: the gate is
+trained to minimise reconstruction error, not to name the corruption, and
+the small $\lambda_c$ chosen by Optuna allows it. The box plots
+(Fig.~\ref{fig:task3_distribution}) show that this sharing is a spread over
+individual images rather than a constant split. Every branch is the top
+choice for 22--30\% of the test images and has near-zero weight on images of
+the other corruptions (Table~\ref{tab:task3_health}); the identity branch's
+0.155 on other corruptions is the deliberate sharing just described. No
+expert became inactive and none dominates unrelated inputs.
 
 \begin{figure*}[t]
 \centering
@@ -1261,9 +1285,18 @@ shared across several branches. Row labels give the four weights.}
 \label{fig:task3_examples}
 \end{figure*}
 
-% TODO(results): discuss dominant vs distributed examples.
-\TODO{Discuss Fig.~\ref{fig:task3_examples}: what kinds of inputs receive
-shared weights, and whether mixing helps or hurts them.}
+Fig.~\ref{fig:task3_examples} contrasts the two behaviours. Images with
+strong corruptions receive essentially one expert (weights of 1.00). The
+images with the most evenly shared weights are mild or ambiguous cases: a low
+occlusion on a black cat, where the rectangle is barely distinguishable from
+the fur (identity 0.31, blur 0.54, occlusion 0.15); light salt-and-pepper
+noise on a grass texture (identity 0.54, salt-and-pepper 0.39); a lightly
+blurred cat on a black background; and a clean image of a dark cat on a
+smooth grey background (identity 0.42, blur 0.57). Mixing helps these images:
+three of the four keep SSIM between 0.81 and 0.97, because the identity share
+preserves detail that an expert alone would smooth. Its limit is visible in
+the salt-and-pepper example, where blending with the identity also carries
+part of the remaining noise into the output.
 
 \subsection{Comparison with Tasks 1 and 2}
 \begin{table}[t]
@@ -1279,21 +1312,32 @@ items; clean inputs excluded) and on clean inputs.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 System & PSNR & SSIM & PSNR & SSIM \\
 \midrule
-Input (no restoration)        & \na & \na & --  & --  \\
-Task 1 universal AE           & \na & \na & \na & \na \\
-Task 2 oracle routing         & \na & \na & \na & \na \\
-Task 2 predicted routing      & \na & \na & \na & \na \\
-Task 3 soft MoE               & \na & \na & \na & \na \\
+Input (no restoration)        & 19.25 & 0.635 & --  & --  \\
+Task 1 universal AE           & \textbf{23.96} & \textbf{0.758} & 25.21 & 0.796 \\
+Task 2 oracle routing         & 23.63 & 0.705 & $\infty$ & 1.000 \\
+Task 2 predicted routing      & 23.63 & 0.705 & 99.21$^{*}$ & 0.997 \\
+Task 3 soft MoE               & 23.71 & 0.750 & 62.43 & 0.999 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): "corrupted / all" and "clean" rows of the Task 1, 2 and 3 result CSVs.
-\TODO{Fill from the ``corrupted/all'' and ``clean'' rows of the Task 1--3 CSVs.}
+$^{*}$Mean of per-image PSNR capped at 100\,dB.
 \end{table}
 
-% TODO(results): interpret the comparison.
-\TODO{Interpret Table~\ref{tab:compare}: does soft routing recover the
-misrouting losses of Task~2, and how do both compare with the universal model?}
+Table~\ref{tab:compare} summarises the three restoration systems. On
+corrupted inputs all three are within 0.35\,dB of each other; the universal
+model is marginally best, the soft mixture recovers most of the SSIM that the
+specialists lost (0.750 vs.\ 0.705) and gains most on mild degradations
+(low blur 27.49\,dB, against 25.36 for Task~1 and 24.67 for Task~2), which is
+exactly where its identity share helps. The decisive difference is on clean
+inputs: the universal model cannot tell a clean image from a corrupted one
+and degrades it, while both routed systems leave it almost intact. Task~2's
+misrouting losses were already small (143 of 36,690 items), so the main
+benefit of soft routing is not the recovery of those errors but its graded
+treatment of mild and ambiguous inputs. Taken together, the soft mixture
+offers the best balance: near-perfect handling of clean images, the best
+results on mild corruptions and corrupted-input quality close to the
+universal model, at the cost of evaluating all three experts for every image
+(about 120\,ms per image in the CPU backend, against about 40\,ms for Task~1).
 
 \subsection{Failure cases}
 \begin{figure*}[t]
@@ -1302,16 +1346,29 @@ misrouting losses of Task~2, and how do both compare with the universal model?}
 \caption{Task 3 failure cases (lowest SSIM per condition), labelled with the routing weights.}
 \label{fig:task3_failures}
 \end{figure*}
-% TODO(results): discuss the Task 3 failures.
-\TODO{Explain the failures in Fig.~\ref{fig:task3_failures}; distinguish
-routing errors from expert errors using the weights in the row labels.
-Representative examples are in \file{figures/task3_moe_examples.png}.}
+The four failures (Fig.~\ref{fig:task3_failures}) are the same two images
+that defeated Tasks~1 and 2, and the routing weights separate the causes. For
+the cat on a black background, the clean version is a \emph{routing} error:
+the gate gives 0.87 to the occlusion expert, which paints the background;
+the medium-occlusion version is correctly routed (occlusion 1.00) but the
+expert cannot tell the real black background from the black masks and fills
+both, an \emph{expert} error. For the dog in the flower field, the routing
+is correct (salt-and-pepper 1.00; blur 0.73 with identity 0.27) and the
+failure is the experts' bottleneck, which cannot reproduce the dense
+texture.
 
 \subsection{Discussion}
-% TODO(results): Task 3 discussion.
-\TODO{Discuss what the gate learned during joint training compared with
-the initial classifier, the effect of $\tau$ and the balance term, and the
-computational cost of evaluating all experts.}
+Joint training turned the classifier into a gate that optimises
+reconstruction: it keeps routing strong corruptions to their experts but
+learned, without being told, to hand mild corruptions partly to the identity
+branch, at the price of a lower label agreement (0.95 vs.\ 0.99). Optuna
+favoured a small classification weight, which permits this, and a small
+balance weight; on balanced batches the balance term was nearly satisfied
+from the start (each branch averaging 0.20--0.30), so it acted as a safeguard
+rather than a driving force, and no collapse occurred. A temperature slightly
+below 1 sharpened the routing for strong corruptions. The remaining failures
+come from the shared bottleneck and from the black-region ambiguity, which no
+routing scheme can remove, and every image costs three expert evaluations.
 
 % =====================================================================
 \section{Task 4: Style-Conditioned Face-to-Sketch GAN}
@@ -1569,7 +1626,7 @@ Study & Trials$\times$ep. & Compl. & Pruned & Best & Best value \\
 Task 1 UDAE & 30$\times$10 & 19 & 11 & 20 & 0.1192 \\
 Task 2 classifier & 12$\times$6  & 3 & 9 & 0 & 0.9912 \\
 Task 2 specialists & 10$\times$5  & 3 & 7 & 2 & 0.1395 \\
-Task 3 MoE & 20$\times$(2+6) & \na & \na & \na & \na \\
+Task 3 MoE & 8$\times$(1+4) & 8 & 0 & 5 & 0.0651 \\
 Task 4 cGAN & 8$\times$15 & 3 & 5 & 1 & 0.3288 \\
 \bottomrule
 \end{tabular}
