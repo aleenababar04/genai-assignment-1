@@ -21,7 +21,7 @@ optuna:
   pruner_warmup_epochs: 6
 
 final:
-  epochs: 100
+  epochs: 200
   sample_every: 10                  # log the same validation photos every N epochs
   samples_per_style: 2
 

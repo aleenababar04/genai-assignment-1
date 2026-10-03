@@ -347,6 +347,20 @@ Copy this block for each new decision.
 - **Choice and why:** Smaller searches. Fewer trials explore the search space less thoroughly; this is stated as a limitation in the report.
 - **Report section it feeds:** Experimental setup; limitations.
 
+### Task 4: retraining the final GAN for 200 epochs
+
+- **Date:** 2026-10-04
+- **Decision:** Retrain only the final Task 4 model with the configuration Optuna already chose, for 200 epochs (the schedule originally planned) instead of the 100 used in the first run. Keep whichever checkpoint has the lower **validation** objective; the test set is not used to choose.
+- **Question:** Is it worth spending Kaggle time on a longer GAN training, with about 12 hours left before the deadline?
+- **Alternatives considered:**
+  - Keep the 100-epoch model: nothing to redo, but its validation SSIM was still rising at epoch 100 (0.41 to 0.48 over the run).
+  - Retrain 200 epochs with the same settings: no new search, so the Optuna study and the other results stay valid.
+  - Rerun the searches of Tasks 2 to 4 with the original budgets: would change many numbers and the Task 3 starting point; too much rework for the time left.
+- **Sources consulted:** W&B run durations (queried with the W&B API on 2026-10-04): the 100-epoch final run of Task 4 took 33.7 minutes, so 200 epochs should take about 70 minutes.
+- **Experiment and numbers:** TODO after the run: validation objective and test metrics of the 200-epoch model against the 100-epoch model.
+- **Choice and why:** Retrain, because it is cheap and restores the planned schedule; the first model is kept as a fallback and the comparison is reported.
+- **Report section it feeds:** Task 4 training procedure; limitations.
+
 ## Upcoming decisions
 
 Empty headings for decisions that still have to be made. Fill each one in with the template above when the decision is taken.
