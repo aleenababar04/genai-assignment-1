@@ -429,9 +429,9 @@ term~\cite{wang2004ssim} rewards preserved structure, edges and local
 contrast. SSIM is computed with the \texttt{pytorch-msssim} implementation
 (Gaussian window $11\times11$, $\sigma=1.5$, data range 1), both in the loss
 and as a metric.
-% TODO: justify the SSIM window choice after reading Wang et al. (decision log: "SSIM implementation and window size").
-\TODO{Justify the SSIM implementation and window size (decision log entry
-still open).}
+These are the window and width proposed with SSIM in the original
+paper~\cite{wang2004ssim}; we kept them so that our values are comparable with
+other work, rather than tuning the metric.
 We report PSNR, SSIM and L1 per image and average them per condition and
 severity. PSNR uses a peak value of 1 and a mean squared error clamped at
 $10^{-10}$, so an image returned unchanged scores a capped 100\,dB; because
@@ -502,7 +502,7 @@ The search settled on the widest bottleneck ($C_z=128$, a $12\times$
 compression) and almost no dropout, a preference for capacity that is
 consistent with the detail loss discussed below. The selected $\alpha=0.55$
 weights SSIM more heavily than the suggested starting value of 0.8. The final
-model was retrained for 80 epochs (43 minutes on a Kaggle T4 GPU).
+model was retrained for 80 epochs (43 minutes on a Kaggle GPU).
 
 \begin{figure}[t]
 \centering
@@ -1631,10 +1631,10 @@ Task 4 cGAN & 8$\times$15 & 3 & 5 & 1 & 0.3288 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): counts from the training logs / optuna_studies/*.db; for task3 also the number pruned for routing collapse.
-\TODO{Fill from the Optuna studies; objectives: Tasks 1--3 minimise $J$
-(Eq.~\eqref{eq:val_obj}), the classifier maximises macro-F1, Task~4 minimises
-$J_{\mathrm{GAN}}$.}
+Counts are read from \file{optuna\_studies/*.db}. Objectives: Tasks 1--3
+minimise $J$ (Eq.~\eqref{eq:val_obj}), the classifier maximises macro-F1,
+Task~4 minimises $J_{\mathrm{GAN}}$. No Task~3 trial was pruned for routing
+collapse.
 \end{table}
 
 \subsection{Reproducibility}
@@ -1658,8 +1658,9 @@ integer style. Each export is run with ONNX Runtime on the same inputs as
 PyTorch (the first 16 validation-manifest items, covering all four
 conditions, for Tasks~1--3; six random images, two per style, for Task~4),
 and the export fails if the maximum absolute
-difference exceeds $10^{-4}$. Table~\ref{tab:onnx} will list the measured
-differences.
+difference exceeds $10^{-4}$. Table~\ref{tab:onnx} lists the measured
+differences: all are at the level of single-precision rounding, two orders of
+magnitude or more below the tolerance.
 
 \begin{table}[t]
 \centering
@@ -1671,18 +1672,16 @@ differences.
 \toprule
 Model & Max.\ abs.\ difference \\
 \midrule
-\texttt{task1\_udae}                   & \na \\
-\texttt{task2\_classifier}             & \na \\
-\texttt{task2\_specialist\_salt\_pepper} & \na \\
-\texttt{task2\_specialist\_blur}       & \na \\
-\texttt{task2\_specialist\_occlusion}  & \na \\
-\texttt{task3\_moe} (image / weights)  & \na \\
-\texttt{task4\_generator}              & \na \\
+\texttt{task1\_udae}                   & $5.4\times10^{-7}$ \\
+\texttt{task2\_classifier} (logits)    & $5.7\times10^{-6}$ \\
+\texttt{task2\_specialist\_salt\_pepper} & $1.0\times10^{-6}$ \\
+\texttt{task2\_specialist\_blur}       & $1.1\times10^{-6}$ \\
+\texttt{task2\_specialist\_occlusion}  & $7.2\times10^{-7}$ \\
+\texttt{task3\_moe} (image / weights / logits) & $5.4\times10^{-7}$ / $1.2\times10^{-7}$ / $2.9\times10^{-6}$ \\
+\texttt{task4\_generator}              & $1.3\times10^{-6}$ \\
 \bottomrule
 \end{tabular}
 \\[3pt]
-% TODO(results): fill from report/results/*_onnx_check.json.
-\TODO{Fill from \file{report/results/*_onnx_check.json}.}
 \end{table}
 
 \subsection{Engineering difficulties and how they were resolved}
@@ -1721,21 +1720,35 @@ named \emph{RestoreLab}: a neutral light interface with white cards, one
 accent colour and a fixed colour per input condition, with one screen per
 workspace plus loading and error states. The prompts are kept in
 \file{docs/stitch_prompts.md}.
-% TODO: Stitch evidence (screenshots + prompt-and-screen screenshot with date) in report/figures/stitch/.
-\TODO{Insert the Stitch evidence (Fig.~\ref{fig:stitch}) and state which
-prompts were actually used and what was changed between the Stitch design
-and the implementation.}
+The prompts were pasted into Stitch screen by screen, and the nine resulting
+screens (design system, overview, the four workspaces, the webcam state, and
+the loading and error states) and their HTML exports are kept in
+\file{report/figures/stitch/}; Fig.~\ref{fig:stitch} shows two of them.
+
+The React implementation follows these screens (layout, colours, cards,
+controls, image panels, probability bars and expert cards) with deliberate
+differences. Stitch's mock-ups contain placeholder content that the backend
+cannot provide, such as PSNR and VRAM badges, made-up latencies and a
+``4 of 4 models'' count; the application shows only real values (the
+number of loaded models comes from the health endpoint, and the confidence
+and entropy values are computed from the returned probabilities and
+weights). Stitch's invented style names were replaced by the plain labels
+Style~1--3, and the long workspace name \emph{Soft Mixture-of-Experts
+Restoration} wraps to two lines in the sidebar because the exact name is
+required. A seed field for reproducible corruptions, not in the design, was
+added.
 
 \begin{figure*}[t]
 \centering
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/stitch/stitch_project_canvas.png}{\linewidth}{Stitch project canvas showing all generated screens}
+\figOrTodo{figures/stitch/02_universal_restoration.png}{\linewidth}{Stitch screen: Universal Restoration}
 \end{minipage}\hfill
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/stitch/02_universal_restoration.png}{\linewidth}{Stitch screen of a workspace, ideally with the prompt visible and dated}
+\figOrTodo{figures/stitch/05_face_to_sketch.png}{\linewidth}{Stitch screen: Face-to-Sketch Generator}
 \end{minipage}
-\caption{Evidence of the original Google Stitch design. Left: the project
-canvas. Right: a generated workspace screen.}
+\caption{Evidence of the original Google Stitch design: the generated
+screens for Universal Restoration (left) and the Face-to-Sketch Generator
+(right). All screens are in \file{report/figures/stitch/}.}
 \label{fig:stitch}
 \end{figure*}
 
@@ -1816,16 +1829,16 @@ Fig.~\ref{fig:app_screens} shows the running application.
 \begin{figure*}[t]
 \centering
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/app_universal.png}{\linewidth}{Screenshot: Universal Restoration with a corrupted sample}
+\figOrTodo{figures/app/01_universal.png}{\linewidth}{Screenshot: Universal Restoration with a corrupted sample}
 \end{minipage}\hfill
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/app_hard_routed.png}{\linewidth}{Screenshot: Hard-Routed Restoration with probabilities and selected expert}
+\figOrTodo{figures/app/02_hard_routed.png}{\linewidth}{Screenshot: Hard-Routed Restoration with probabilities and selected expert}
 \end{minipage}\\[6pt]
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/app_soft_moe.png}{\linewidth}{Screenshot: Soft Mixture-of-Experts Restoration with routing weights}
+\figOrTodo{figures/app/03_soft_moe.png}{\linewidth}{Screenshot: Soft Mixture-of-Experts Restoration with routing weights}
 \end{minipage}\hfill
 \begin{minipage}{0.49\textwidth}\centering
-\figOrTodo{figures/app_face_to_sketch.png}{\linewidth}{Screenshot: Face-to-Sketch Generator with photo and sketch side by side}
+\figOrTodo{figures/app/04_face_to_sketch.png}{\linewidth}{Screenshot: Face-to-Sketch Generator with photo and sketch side by side}
 \end{minipage}
 \caption{The running application with the trained models: (top left)
 Universal Restoration, (top right) Hard-Routed Restoration, (bottom left)
@@ -1853,9 +1866,15 @@ trained configurations.}
   \item \emph{Single runs.} Each configuration is trained once with seed 42;
   we report no variance across seeds, so small differences between systems
   should be read with caution.
-  \item \emph{Short Optuna trials.} Trials use 8--25 epochs, far fewer than
-  the final schedules; the ranking of configurations after a short run may
-  differ from their ranking after full training.
+  \item \emph{Short and few Optuna trials.} Trials use 5--15 epochs (10 for
+  Task~1), far fewer than the final schedules, and Tasks 2--4 ran only 8--12
+  trials, of which most were pruned; the ranking of configurations after a
+  short run may differ from their ranking after full training, and the
+  searches are coarse. The budgets of Tasks 2--4 were reduced from the
+  original plan to meet the deadline.
+  \item \emph{Shortened final training.} The GAN was trained for 100 instead
+  of the planned 200 epochs and its validation SSIM was still rising, so its
+  quality is probably below what a full schedule would reach.
   \item \emph{Fixed validation weighting.} The objective $J$ uses the
   weights 0.8/0.2, which may slightly favour trials whose training $\alpha$
   or $\lambda_1$ is close to 0.8.
@@ -1876,9 +1895,25 @@ trained configurations.}
   \item \emph{Literature.} Several design arguments rely on sources that must
   still be read first-hand.
   % TODO: remove this item once every cited work has been read.
+  \item \emph{A quality ceiling shared by all restoration systems.} All three
+  restoration systems are limited to about 25\,dB by the $8\times8$
+  bottleneck, so mild corruptions are barely improved or slightly degraded,
+  and the specialists of Task~2 are not better than the universal model; the
+  comparison between them is also not fully controlled (different search
+  sizes, epochs and bottleneck widths).
+  \item \emph{Black regions.} Large black areas in clean photographs
+  (backgrounds, letterbox borders) are mistaken for occlusion by the
+  universal model, the classifier and the gate; none of the systems handles
+  them, and the training corruptions contain no such natural black regions.
+  \item \emph{Unbalanced and small test sets for Task~4.} Only 46 of the
+  1,046 FS2K test pairs are in Style~3, so its score is uncertain, and the
+  paired pixel metrics understate the quality of dense drawing styles.
+  \item \emph{Computational cost of the mixture.} Every image passes through
+  all three experts (about 120\,ms per image in the CPU backend, three times
+  the cost of Task~1).
+  \item \emph{Local deployment only.} The application is deployed through
+  Docker Compose on a local machine; no public hosting was set up.
 \end{itemize}
-% TODO(results): add limitations revealed by the results (e.g. failure modes that no system handles).
-\TODO{Add limitations revealed by the results.}
 
 % =====================================================================
 \section{Conclusion}
@@ -1892,10 +1927,25 @@ components and is guarded against routing collapse, and a style-conditioned
 pix2pix-style GAN for face-to-sketch generation. All four are tuned with
 Optuna, tracked in W\&B, verified after ONNX export and available in one
 containerised web application.
-% TODO(results): conclusions from the results.
-\TODO{State the main findings: which restoration approach worked best on
-which corruption, what the gate learned, how well the style condition was
-used, and what we would change next.}
+The main findings are as follows. A single universal autoencoder removes
+noise and fills occlusions without knowing the corruption, but it pays with
+a quality ceiling set by its bottleneck: it degrades clean and mildly
+blurred images, and a limited skip connection shows that this ceiling is the
+bottleneck's doing (+2.8\,dB on corrupted inputs). Hard routing with a
+99.6\%-accurate classifier makes the identity bypass its main gain, since
+clean images are returned unchanged, but its specialists are not better than
+the universal model, and its few errors come from large black regions that
+look like occlusion. The soft mixture learns to route every corruption to
+its own expert, increasingly sharply with severity, and to hedge on mild
+corruptions by keeping part of the original image; it gives the best results
+on mild degradations while keeping clean images almost intact, at three times
+the cost. The conditional GAN uses its learned style embedding visibly (the
+same face is drawn in three distinct styles), with the lowest scores on the
+dense Style~2 where the pixel metrics penalise plausible but different
+strokes. With more time we would run longer searches and a full-length GAN
+schedule, compare the specialists and the universal model under identical
+budgets, train with natural black borders to remove the black-region
+ambiguity, and add a perceptual loss to reduce the smoothing.
 
 \section*{Code and Demonstration}
 Source code, configuration files, Optuna studies, manifests and execution
@@ -1992,8 +2042,10 @@ images, ONNX export with maximum PyTorch--ONNX difference $5.96\times10^{-8}$);
 these were plumbing checks on an untrained model, not results. A short CPU
 training run (30 batches per epoch) confirmed that the validation objective
 falls (0.320 before, 0.282 after one epoch).
+The real Kaggle run followed (30 Optuna trials and the 80-epoch final
+training, both tracked in W\&B); its test results are reported in this paper.
 % TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: the real Kaggle run and own read-through of the model and training script.}
+\TODO{Pending: own read-through of the model and training script.}
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with three subagents.}
 \emph{Used for:} Phase~3 code for Task~2 (\file{src/models/classifier.py},
@@ -2011,8 +2063,9 @@ checks on untrained models and their outputs were deleted. The smoke run
 showed that clean images returned unchanged score the capped 100\,dB PSNR and
 inflate overall averages, so a ``corrupted/all'' summary row and an SSIM-loss
 column for misrouted images were added (122 tests passed afterwards).
+The real Kaggle run followed and its results are reported in this paper.
 % TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: the real Kaggle run and own read-through.}
+\TODO{Pending: own read-through.}
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
 \emph{Used for:} Task~3 code (\file{src/models/soft_moe.py},
@@ -2030,8 +2083,9 @@ outputs were deleted. The first attempt hit the one-hour background limit on
 the shared CPU and the remaining steps were rerun. While it ran, validation
 was found to pass over the data twice; it was changed to collect the routing
 weights in the same pass.
+The real Kaggle run followed and its results are reported in this paper.
 % TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: the real Kaggle run and own read-through.}
+\TODO{Pending: own read-through.}
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
 \emph{Used for:} Task~4 code (\file{src/models/cgan.py},
@@ -2045,8 +2099,13 @@ three styles) and 17 for the data (stratified split, identical augmentation of
 photo and sketch, on a synthetic FS2K tree). An end-to-end CPU smoke run on a
 tiny fake cache covered the Optuna trial, final training, evaluation and ONNX
 export (maximum difference $5.96\times10^{-8}$); its outputs were deleted.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: confirm the FS2K layout against the real download.}
+The real Kaggle training worked, but the test-set evaluation on Kaggle failed
+with a missing test-cache file (the cause was not established); it was rerun
+locally on the same split after the FS2K download. Running the preparation
+script on the real download showed that the zip unpacks into nested
+\file{FS2K} folders, so the folder search was made recursive; the layout
+otherwise matched what the tool had read on the FS2K page (899/159/1,046
+pairs, all 2,104 sketches greyscale).
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
 \emph{Used for:} the FastAPI backend (image validation and preprocessing,
@@ -2070,9 +2129,10 @@ cards) and the pages were exercised in headless Chrome by the subagent.
 backend became healthy, \texttt{http://localhost:8080} served the application
 (including client-side routes), and the health, samples, sample-image and
 restore requests (503 ``model not loaded'', as expected without models) all
-worked through the nginx proxy.
+worked through the nginx proxy. Later, all seven real models were loaded and
+a request to every workspace was answered through the proxy.
 % TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: the visual comparison with the Stitch design, and a run with the real models.}
+\TODO{Pending: own visual check of every page.}
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
 \emph{Used for:} drafting this report's LaTeX source (structure, methodology

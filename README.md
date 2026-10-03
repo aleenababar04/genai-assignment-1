@@ -142,7 +142,19 @@ cd frontend && npm install && npm run dev      # then open http://localhost:5173
 
 ## Experiment tracking
 
-All training runs, Optuna trials, evaluation results and checkpoints are logged to the Weights & Biases project `genai-a1`: TODO: project link. The Optuna studies are in `optuna_studies/` (`task1_udae.db`, `task2_classifier.db`, `task2_specialists.db`, `task3_moe.db`, `task4_cgan.db`) and can be opened with `optuna-dashboard sqlite:///optuna_studies/<file>.db`.
+All training runs, Optuna trials, evaluation results and checkpoints are logged to the Weights & Biases project `genai-a1`: TODO: project link. The Optuna studies are in `optuna_studies/` (`task1_udae.db`, `task2_classifier.db`, `task2_specialists.db`, `task3_moe.db`, `task4_cgan.db`) and can be summarised with `python scripts/show_results.py` (or opened interactively after `pip install optuna-dashboard`: `optuna-dashboard sqlite:///optuna_studies/<file>.db`).
+
+## Documentation
+
+| File | Purpose |
+|---|---|
+| [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md) | What the assignment is and how every part was built and explained, for exam preparation |
+| [docs/testing_and_outputs_guide.md](docs/testing_and_outputs_guide.md) | How to test the application, and where every output is and what it means |
+| [docs/decision_log.md](docs/decision_log.md) | Every design decision with the alternatives and the evidence |
+| [docs/ai_use_log.md](docs/ai_use_log.md) | Every use of AI tools and how the output was checked |
+| `scripts/show_results.py` | Prints all key results in one summary |
+| `scripts/build_gallery.py` | Builds `report/outputs_gallery.html`, a page showing every figure with an explanation |
+| `scripts/demo_temperature.py` | Shows how the Task 3 temperature changes the routing weights |
 
 ## Report and demo video
 

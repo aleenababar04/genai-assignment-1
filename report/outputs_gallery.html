@@ -1,0 +1,321 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Project outputs gallery</title><style>
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:1100px;margin:0 auto;padding:16px;background:#f8fafc;color:#0f172a}
+h1{font-size:26px} h2{margin-top:40px;border-bottom:2px solid #4f46e5;padding-bottom:4px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:18px 0}
+.card h3{margin:0 0 8px 0;font-size:17px} .card img{max-width:100%;border:1px solid #e2e8f0;border-radius:6px}
+.label{font-weight:600;color:#4f46e5} .file{font-family:monospace;font-size:12px;color:#64748b}
+p{margin:6px 0} nav a{margin-right:12px}
+@media (prefers-color-scheme:dark){body{background:#0f172a;color:#f1f5f9}.card{background:#1e293b;border-color:#334155}
+.card img{border-color:#334155}.file{color:#94a3b8}.label{color:#a5b4fc}}
+</style></head><body><h1>Project outputs gallery</h1><p>Every figure produced by the project, with an explanation. Numbers behind them: <code>python scripts/show_results.py</code>.</p><nav><a href="#s0">The data</a> <a href="#s1">Task 1: universal denoising autoencoder</a> <a href="#s2">Task 2: classifier, specialists, hard routing</a> <a href="#s3">Task 3: soft mixture-of-experts</a> <a href="#s4">Task 4: face-to-sketch conditional GAN</a> <a href="#s5">Google Stitch design</a></nav><h2 id="s0">The data</h2>
+<div class="card"><h3>The corruptions used for testing</h3>
+<img src="figures/corruption_preview.png" alt="The corruptions used for testing">
+<p class="file">report/figures/corruption_preview.png</p>
+<p><span class="label">What it shows:</span> Four test images (rows), each shown clean and then with salt-and-pepper noise, blur and occlusion at low, medium and high severity.</p>
+<p><span class="label">How to read it:</span> Read each row left to right: the damage gets stronger within each group of three.</p>
+<p><span class="label">What it means:</span> These are the exact fixed corruptions of the test manifest, so every model is judged on the same damage.</p>
+</div>
+<h2 id="s1">Task 1: universal denoising autoencoder</h2>
+<div class="card"><h3>Twelve representative test examples</h3>
+<img src="figures/task1_udae_examples.png" alt="Twelve representative test examples">
+<p class="file">report/figures/task1_udae_examples.png</p>
+<p><span class="label">What it shows:</span> Columns: clean target, corrupted input, restored output, absolute error map. One typical image per condition and severity.</p>
+<p><span class="label">How to read it:</span> On the error map, black means no error and bright yellow means a large error (fixed scale 0 to 0.5).</p>
+<p><span class="label">What it means:</span> Noise and blur are repaired with diffuse small errors on edges and fur. Occlusion boxes are filled with plausible colour blends, so the error concentrates in the box.</p>
+</div>
+<div class="card"><h3>Four failure cases</h3>
+<img src="figures/task1_udae_failures.png" alt="Four failure cases">
+<p class="file">report/figures/task1_udae_failures.png</p>
+<p><span class="label">What it shows:</span> The lowest-SSIM test image of each condition.</p>
+<p><span class="label">How to read it:</span> Same columns as above.</p>
+<p><span class="label">What it means:</span> The cat on a black background is &#x27;repaired&#x27; even when clean, because black areas look like occlusion masks to a network that is not told the corruption. The flower-field dog shows dense texture that cannot pass the bottleneck. This failure motivates Task 2.</p>
+</div>
+<div class="card"><h3>Quality before and after (PSNR)</h3>
+<img src="figures/task1_udae_psnr_bars.png" alt="Quality before and after (PSNR)">
+<p class="file">report/figures/task1_udae_psnr_bars.png</p>
+<p><span class="label">What it shows:</span> For each condition and severity: PSNR of the damaged input (blue) and of the restored output (orange).</p>
+<p><span class="label">How to read it:</span> Orange above blue means the model helped. Higher is better.</p>
+<p><span class="label">What it means:</span> Strong damage improves a lot (noise, high occlusion). Clean and mild blur get worse: the output is capped near 25 dB by the bottleneck.</p>
+</div>
+<div class="card"><h3>Quality before and after (SSIM)</h3>
+<img src="figures/task1_udae_ssim_bars.png" alt="Quality before and after (SSIM)">
+<p class="file">report/figures/task1_udae_ssim_bars.png</p>
+<p><span class="label">What it shows:</span> Same as the previous bars, using SSIM (0 to 1).</p>
+<p><span class="label">How to read it:</span> Higher is better.</p>
+<p><span class="label">What it means:</span> Same story as PSNR; for low occlusion the SSIM is slightly lower than the input because the model softens the whole image.</p>
+</div>
+<div class="card"><h3>Training curves of the final run</h3>
+<img src="figures/task1_udae_curves.png" alt="Training curves of the final run">
+<p class="file">report/figures/task1_udae_curves.png</p>
+<p><span class="label">What it shows:</span> Training loss, validation objective, validation PSNR and validation SSIM per epoch (80 epochs).</p>
+<p><span class="label">How to read it:</span> The first two should fall, the last two should rise.</p>
+<p><span class="label">What it means:</span> Steady convergence, no overfitting (validation keeps improving with training), smoother as the learning rate decays.</p>
+</div>
+<div class="card"><h3>Optuna search for Task 1</h3>
+<img src="figures/task1_udae_optuna.png" alt="Optuna search for Task 1">
+<p class="file">report/figures/task1_udae_optuna.png</p>
+<p><span class="label">What it shows:</span> Left: the score of every trial (crosses are trials stopped early) and the best so far. Right: which hyperparameters mattered.</p>
+<p><span class="label">How to read it:</span> Lower is better on the left. Longer bars on the right mean more influence.</p>
+<p><span class="label">What it means:</span> 30 trials, 19 completed, 11 pruned. The learning rate mattered most (0.67), then dropout and alpha.</p>
+</div>
+<div class="card"><h3>Skip-connection ablation: examples</h3>
+<img src="figures/task1_udae_skip_examples.png" alt="Skip-connection ablation: examples">
+<p class="file">report/figures/task1_udae_skip_examples.png</p>
+<p><span class="label">What it shows:</span> The same twelve examples for the model with one 16x16 skip connection.</p>
+<p><span class="label">How to read it:</span> Compare with the no-skip examples: look at fur and edges.</p>
+<p><span class="label">What it means:</span> Sharper outputs. The skip lets detail bypass the bottleneck, which is why we investigated it, and why we keep the skip-free model for the &#x27;genuine bottleneck&#x27; requirement.</p>
+</div>
+<div class="card"><h3>Skip ablation: failure cases</h3>
+<img src="figures/task1_udae_skip_failures.png" alt="Skip ablation: failure cases">
+<p class="file">report/figures/task1_udae_skip_failures.png</p>
+<p><span class="label">What it shows:</span> Worst cases of the skip model.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> The black-background problem persists, so it is not only a bottleneck effect.</p>
+</div>
+<div class="card"><h3>Skip ablation: PSNR bars</h3>
+<img src="figures/task1_udae_skip_psnr_bars.png" alt="Skip ablation: PSNR bars">
+<p class="file">report/figures/task1_udae_skip_psnr_bars.png</p>
+<p><span class="label">What it shows:</span> Before/after PSNR for the skip model.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Higher orange bars than the no-skip model for every condition.</p>
+</div>
+<div class="card"><h3>Skip ablation: SSIM bars</h3>
+<img src="figures/task1_udae_skip_ssim_bars.png" alt="Skip ablation: SSIM bars">
+<p class="file">report/figures/task1_udae_skip_ssim_bars.png</p>
+<p><span class="label">What it shows:</span> Before/after SSIM for the skip model.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Higher than without the skip.</p>
+</div>
+<div class="card"><h3>Skip ablation: training curves</h3>
+<img src="figures/task1_udae_skip_curves.png" alt="Skip ablation: training curves">
+<p class="file">report/figures/task1_udae_skip_curves.png</p>
+<p><span class="label">What it shows:</span> Curves of the skip model&#x27;s final run.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Converges like the main model, to a better level.</p>
+</div>
+<h2 id="s2">Task 2: classifier, specialists, hard routing</h2>
+<div class="card"><h3>Classifier confusion matrix (test set)</h3>
+<img src="figures/task2_test_confusion.png" alt="Classifier confusion matrix (test set)">
+<p class="file">report/figures/task2_test_confusion.png</p>
+<p><span class="label">What it shows:</span> Rows are the true condition, columns the classifier&#x27;s answer; each row sums to 1.</p>
+<p><span class="label">How to read it:</span> A perfect classifier is a bright diagonal with zeros elsewhere.</p>
+<p><span class="label">What it means:</span> Almost perfect. The small off-diagonal numbers are low occlusion called clean and clean called blur or occlusion.</p>
+</div>
+<div class="card"><h3>Classifier confusion matrix (validation set)</h3>
+<img src="figures/task2_classifier_val_confusion.png" alt="Classifier confusion matrix (validation set)">
+<p class="file">report/figures/task2_classifier_val_confusion.png</p>
+<p><span class="label">What it shows:</span> Same matrix on the validation set, for the epoch that was kept.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Used for choosing the checkpoint; it agrees with the test result, so the model generalises.</p>
+</div>
+<div class="card"><h3>Classifier training curves</h3>
+<img src="figures/task2_classifier_curves.png" alt="Classifier training curves">
+<p class="file">report/figures/task2_classifier_curves.png</p>
+<p><span class="label">What it shows:</span> Cross-entropy, accuracy (training and validation) and validation macro-F1 per epoch.</p>
+<p><span class="label">How to read it:</span> Loss falls; accuracy and F1 rise towards 1.</p>
+<p><span class="label">What it means:</span> Converges within about 10 epochs; training and validation stay close, so no overfitting. One early dip (epoch 6) while the learning rate was high.</p>
+</div>
+<div class="card"><h3>Optuna search for the classifier</h3>
+<img src="figures/task2_classifier_optuna.png" alt="Optuna search for the classifier">
+<p class="file">report/figures/task2_classifier_optuna.png</p>
+<p><span class="label">What it shows:</span> Trial scores (validation macro-F1) and hyperparameter importances.</p>
+<p><span class="label">How to read it:</span> Higher is better here.</p>
+<p><span class="label">What it means:</span> 12 trials, 3 completed, 9 pruned. Dropout, weight decay and learning rate matter; the network size hardly does (the small preset won).</p>
+</div>
+<div class="card"><h3>Optuna search for the specialists</h3>
+<img src="figures/task2_specialists_optuna.png" alt="Optuna search for the specialists">
+<p class="file">report/figures/task2_specialists_optuna.png</p>
+<p><span class="label">What it shows:</span> Trial scores (mean objective of the three specialists) and importances.</p>
+<p><span class="label">How to read it:</span> Lower is better.</p>
+<p><span class="label">What it means:</span> 10 trials, 3 completed, 7 pruned. Learning rate and the L1/SSIM weight dominate.</p>
+</div>
+<div class="card"><h3>Salt-and-pepper specialist curves</h3>
+<img src="figures/task2_specialist_salt_pepper_curves.png" alt="Salt-and-pepper specialist curves">
+<p class="file">report/figures/task2_specialist_salt_pepper_curves.png</p>
+<p><span class="label">What it shows:</span> Training curves of this specialist.</p>
+<p><span class="label">How to read it:</span> Loss falls, quality rises.</p>
+<p><span class="label">What it means:</span> Trained only on noisy images.</p>
+</div>
+<div class="card"><h3>Blur specialist curves</h3>
+<img src="figures/task2_specialist_blur_curves.png" alt="Blur specialist curves">
+<p class="file">report/figures/task2_specialist_blur_curves.png</p>
+<p><span class="label">What it shows:</span> Training curves of this specialist.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Trained only on blurred images.</p>
+</div>
+<div class="card"><h3>Occlusion specialist curves</h3>
+<img src="figures/task2_specialist_occlusion_curves.png" alt="Occlusion specialist curves">
+<p class="file">report/figures/task2_specialist_occlusion_curves.png</p>
+<p><span class="label">What it shows:</span> Training curves of this specialist.</p>
+<p><span class="label">How to read it:</span> As above.</p>
+<p><span class="label">What it means:</span> Trained only on images with black boxes.</p>
+</div>
+<div class="card"><h3>Twelve examples with predicted routing</h3>
+<img src="figures/task2_examples.png" alt="Twelve examples with predicted routing">
+<p class="file">report/figures/task2_examples.png</p>
+<p><span class="label">What it shows:</span> Clean target, corrupted input, restored output and error map; the row label names the expert chosen.</p>
+<p><span class="label">How to read it:</span> Check that each corruption goes to its own expert and clean images are untouched.</p>
+<p><span class="label">What it means:</span> Hard routing works: the right expert is picked and clean images pass through unchanged.</p>
+</div>
+<div class="card"><h3>The six worst misrouted images</h3>
+<img src="figures/task2_misrouted.png" alt="The six worst misrouted images">
+<p class="file">report/figures/task2_misrouted.png</p>
+<p><span class="label">What it shows:</span> Images sent to the wrong branch, with the biggest quality loss compared with oracle routing.</p>
+<p><span class="label">How to read it:</span> Row label: true class, branch chosen, PSNR (and the PSNR it would have had).</p>
+<p><span class="label">What it means:</span> All are clean photos with large black areas (black background, black borders). The classifier reads them as occlusion and the occlusion expert paints over them.</p>
+</div>
+<div class="card"><h3>Predicted-routing quality before and after</h3>
+<img src="figures/task2_predicted_psnr_bars.png" alt="Predicted-routing quality before and after">
+<p class="file">report/figures/task2_predicted_psnr_bars.png</p>
+<p><span class="label">What it shows:</span> PSNR of input and output for every condition and severity under the real (predicted) routing.</p>
+<p><span class="label">How to read it:</span> Orange above blue means it helped.</p>
+<p><span class="label">What it means:</span> Almost identical to oracle routing; clean images are intact.</p>
+</div>
+<h2 id="s3">Task 3: soft mixture-of-experts</h2>
+<div class="card"><h3>Routing heatmap (the key figure of Task 3)</h3>
+<img src="figures/task3_moe_routing_heatmap.png" alt="Routing heatmap (the key figure of Task 3)">
+<p class="file">report/figures/task3_moe_routing_heatmap.png</p>
+<p><span class="label">What it shows:</span> Average weight given to each of the four branches (columns) for each true corruption and severity (rows).</p>
+<p><span class="label">How to read it:</span> Brighter means more weight. A bright diagonal means the gate sends each corruption to its own expert.</p>
+<p><span class="label">What it means:</span> Each corruption goes to its own expert and the routing sharpens as severity grows. For mild damage the leftover weight goes to the identity branch, never to a wrong expert.</p>
+</div>
+<div class="card"><h3>Weight distribution per corruption</h3>
+<img src="figures/task3_moe_weight_distribution.png" alt="Weight distribution per corruption">
+<p class="file">report/figures/task3_moe_weight_distribution.png</p>
+<p><span class="label">What it shows:</span> Box plots of the four branch weights for each true corruption.</p>
+<p><span class="label">How to read it:</span> The box is the middle half of the images; the line inside is the median; dots are outliers.</p>
+<p><span class="label">What it means:</span> Shows the spread across individual images, not just the average: sharing is image-by-image, not a constant split.</p>
+</div>
+<div class="card"><h3>Examples where one expert dominates</h3>
+<img src="figures/task3_moe_dominant_examples.png" alt="Examples where one expert dominates">
+<p class="file">report/figures/task3_moe_dominant_examples.png</p>
+<p><span class="label">What it shows:</span> Four images where the gate is very sure; row labels give the four weights (id, sp, bl, oc).</p>
+<p><span class="label">How to read it:</span> A weight near 1.00 means that branch alone does the work.</p>
+<p><span class="label">What it means:</span> Strong corruptions get a single expert.</p>
+</div>
+<div class="card"><h3>Examples where the weight is shared</h3>
+<img src="figures/task3_moe_distributed_examples.png" alt="Examples where the weight is shared">
+<p class="file">report/figures/task3_moe_distributed_examples.png</p>
+<p><span class="label">What it shows:</span> Four images with the most evenly spread weights.</p>
+<p><span class="label">How to read it:</span> Look at the weights in the row labels.</p>
+<p><span class="label">What it means:</span> Mild or ambiguous cases (a low occlusion on a black cat, light noise on grass) share weight, and mixing keeps their detail.</p>
+</div>
+<div class="card"><h3>Twelve representative examples</h3>
+<img src="figures/task3_moe_examples.png" alt="Twelve representative examples">
+<p class="file">report/figures/task3_moe_examples.png</p>
+<p><span class="label">What it shows:</span> Clean, corrupted, restored, error map with the weights.</p>
+<p><span class="label">How to read it:</span> As in Task 1.</p>
+<p><span class="label">What it means:</span> The soft mixture&#x27;s typical behaviour across all conditions.</p>
+</div>
+<div class="card"><h3>Failure cases with routing weights</h3>
+<img src="figures/task3_moe_failures.png" alt="Failure cases with routing weights">
+<p class="file">report/figures/task3_moe_failures.png</p>
+<p><span class="label">What it shows:</span> The worst image of each condition, with the weights in the row labels.</p>
+<p><span class="label">How to read it:</span> Compare the weights with the true corruption.</p>
+<p><span class="label">What it means:</span> Separates routing errors (clean cat sent 0.87 to the occlusion expert) from expert errors (correct routing, but the expert cannot recover the content).</p>
+</div>
+<div class="card"><h3>Quality before and after</h3>
+<img src="figures/task3_moe_psnr_bars.png" alt="Quality before and after">
+<p class="file">report/figures/task3_moe_psnr_bars.png</p>
+<p><span class="label">What it shows:</span> PSNR of input and output per condition and severity.</p>
+<p><span class="label">How to read it:</span> Orange above blue means it helped.</p>
+<p><span class="label">What it means:</span> Best of the three systems on mild corruptions, and clean images stay almost intact.</p>
+</div>
+<div class="card"><h3>Training curves</h3>
+<img src="figures/task3_moe_curves.png" alt="Training curves">
+<p class="file">report/figures/task3_moe_curves.png</p>
+<p><span class="label">What it shows:</span> Loss parts, validation objective, gate accuracy and the mean weight of each branch per epoch (epochs 1-2 warm-up, then joint fine-tuning).</p>
+<p><span class="label">How to read it:</span> Mean branch weights should stay away from 0 (no collapse).</p>
+<p><span class="label">What it means:</span> The objective falls through fine-tuning; no branch collapses; the identity weight rises as the gate learns to hedge.</p>
+</div>
+<div class="card"><h3>Optuna search for Task 3</h3>
+<img src="figures/task3_moe_optuna.png" alt="Optuna search for Task 3">
+<p class="file">report/figures/task3_moe_optuna.png</p>
+<p><span class="label">What it shows:</span> Trial scores and importances.</p>
+<p><span class="label">How to read it:</span> Lower is better.</p>
+<p><span class="label">What it means:</span> 8 trials, all completed, none pruned for collapse; importances are spread evenly.</p>
+</div>
+<h2 id="s4">Task 4: face-to-sketch conditional GAN</h2>
+<div class="card"><h3>Style swap (proof that the style works)</h3>
+<img src="figures/task4_cgan_style_swap.png" alt="Style swap (proof that the style works)">
+<p class="file">report/figures/task4_cgan_style_swap.png</p>
+<p><span class="label">What it shows:</span> Five test photos, each drawn in Style 1, Style 2 and Style 3.</p>
+<p><span class="label">How to read it:</span> Compare columns for the same row.</p>
+<p><span class="label">What it means:</span> Same identity, pose and hair, but a visibly different drawing style: light outline, heavy shading, soft tone. The learned style embedding controls the output.</p>
+</div>
+<div class="card"><h3>Test examples</h3>
+<img src="figures/task4_cgan_examples.png" alt="Test examples">
+<p class="file">report/figures/task4_cgan_examples.png</p>
+<p><span class="label">What it shows:</span> Photo, true sketch and generated sketch, three examples per style.</p>
+<p><span class="label">How to read it:</span> Compare the last two columns.</p>
+<p><span class="label">What it means:</span> The generator reproduces structure and style; stroke details differ from the artist&#x27;s.</p>
+</div>
+<div class="card"><h3>Four failure cases</h3>
+<img src="figures/task4_cgan_failures.png" alt="Four failure cases">
+<p class="file">report/figures/task4_cgan_failures.png</p>
+<p><span class="label">What it shows:</span> The four test pairs with the lowest SSIM (all Style 2).</p>
+<p><span class="label">How to read it:</span> Compare true and generated sketches.</p>
+<p><span class="label">What it means:</span> Recognisable and in the right style, but the artist&#x27;s individual hair strokes sit elsewhere. These failures are partly a limit of pixel-wise metrics.</p>
+</div>
+<div class="card"><h3>Training curves</h3>
+<img src="figures/task4_cgan_curves.png" alt="Training curves">
+<p class="file">report/figures/task4_cgan_curves.png</p>
+<p><span class="label">What it shows:</span> Discriminator real and fake loss, generator adversarial loss, generator L1, validation SSIM and objective per epoch.</p>
+<p><span class="label">How to read it:</span> Healthy GAN training: the losses oscillate but do not blow up.</p>
+<p><span class="label">What it means:</span> The discriminator slowly gains the upper hand (normal), nothing collapsed, and validation SSIM was still creeping up at epoch 100.</p>
+</div>
+<div class="card"><h3>Optuna search for Task 4</h3>
+<img src="figures/task4_cgan_optuna.png" alt="Optuna search for Task 4">
+<p class="file">report/figures/task4_cgan_optuna.png</p>
+<p><span class="label">What it shows:</span> Trial scores and importances.</p>
+<p><span class="label">How to read it:</span> Lower is better.</p>
+<p><span class="label">What it means:</span> 8 trials, 3 completed, 5 pruned; the balance between the two learning rates and dropout matter most.</p>
+</div>
+<h2 id="s5">Google Stitch design</h2>
+<div class="card"><h3>Design system</h3>
+<img src="figures/stitch/00_design_system.png" alt="Design system">
+<p class="file">report/figures/stitch/00_design_system.png</p>
+<p><span class="label">What it shows:</span> The style guide generated in Stitch.</p>
+<p><span class="label">How to read it:</span> Colours, type, components.</p>
+<p><span class="label">What it means:</span> Evidence that the design started in Stitch.</p>
+</div>
+<div class="card"><h3>Overview screen</h3>
+<img src="figures/stitch/01_overview.png" alt="Overview screen">
+<p class="file">report/figures/stitch/01_overview.png</p>
+<p><span class="label">What it shows:</span> The landing page with four workspace cards.</p>
+</div>
+<div class="card"><h3>Universal Restoration screen</h3>
+<img src="figures/stitch/02_universal_restoration.png" alt="Universal Restoration screen">
+<p class="file">report/figures/stitch/02_universal_restoration.png</p>
+<p><span class="label">What it shows:</span> Input panel and result panel.</p>
+</div>
+<div class="card"><h3>Hard-Routed Restoration screen</h3>
+<img src="figures/stitch/03_hard_routed_restoration.png" alt="Hard-Routed Restoration screen">
+<p class="file">report/figures/stitch/03_hard_routed_restoration.png</p>
+<p><span class="label">What it shows:</span> Classifier probabilities and chosen expert.</p>
+</div>
+<div class="card"><h3>Soft Mixture-of-Experts screen</h3>
+<img src="figures/stitch/04_soft_moe_restoration.png" alt="Soft Mixture-of-Experts screen">
+<p class="file">report/figures/stitch/04_soft_moe_restoration.png</p>
+<p><span class="label">What it shows:</span> Routing weights and contribution bar.</p>
+</div>
+<div class="card"><h3>Face-to-Sketch screen</h3>
+<img src="figures/stitch/05_face_to_sketch.png" alt="Face-to-Sketch screen">
+<p class="file">report/figures/stitch/05_face_to_sketch.png</p>
+<p><span class="label">What it shows:</span> Upload, style choice, side-by-side result.</p>
+</div>
+<div class="card"><h3>Webcam state</h3>
+<img src="figures/stitch/06_face_to_sketch_webcam.png" alt="Webcam state">
+<p class="file">report/figures/stitch/06_face_to_sketch_webcam.png</p>
+<p><span class="label">What it shows:</span> Live preview and capture.</p>
+</div>
+<div class="card"><h3>Loading state</h3>
+<img src="figures/stitch/07_loading_state.png" alt="Loading state">
+<p class="file">report/figures/stitch/07_loading_state.png</p>
+<p><span class="label">What it shows:</span> Spinner and disabled controls while the model runs.</p>
+</div>
+<div class="card"><h3>Error and empty state</h3>
+<img src="figures/stitch/08_error_state.png" alt="Error and empty state">
+<p class="file">report/figures/stitch/08_error_state.png</p>
+<p><span class="label">What it shows:</span> Unsupported file message and empty results.</p>
+</div></body></html>
