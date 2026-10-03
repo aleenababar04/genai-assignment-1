@@ -85,6 +85,11 @@ def test_find_root_flat_and_nested(tmp_path):
     make_fake_fs2k(nested / "FS2K")
     assert find_root(nested) == nested / "FS2K"
 
+    # Unzipping can add several levels (data/FS2K/FS2K/FS2K), as happened on the student's machine.
+    deep = tmp_path / "deep"
+    make_fake_fs2k(deep / "FS2K" / "FS2K")
+    assert find_root(deep) == deep / "FS2K" / "FS2K"
+
 
 def test_find_root_missing_gives_helpful_error(tmp_path):
     (tmp_path / "empty").mkdir()
@@ -121,6 +126,18 @@ def test_resolve_pair_prefers_jpg(tmp_path):
     Image.new("RGB", (10, 10)).save(tmp_path / "sketch" / "sketch1" / "sketch0003.png")
     _, sketch = resolve_pair(tmp_path, "photo1/image0003")
     assert sketch.suffix == ".jpg"
+
+
+def test_resolve_pair_finds_capital_extension(tmp_path):
+    """FS2K has files like photo3/image0449.JPG; Linux is case-sensitive (the Kaggle failure)."""
+    (tmp_path / "photo" / "photo3").mkdir(parents=True)
+    (tmp_path / "sketch" / "sketch3").mkdir(parents=True)
+    Image.new("RGB", (10, 10)).save(tmp_path / "photo" / "photo3" / "image0449.JPG", format="JPEG")
+    Image.new("RGB", (10, 10)).save(tmp_path / "sketch" / "sketch3" / "sketch0449.JPG", format="JPEG")
+    photo, sketch = resolve_pair(tmp_path, "photo3/image0449")
+    # Windows ignores letter case and may return the .jpg spelling; Linux returns the real name.
+    assert photo.name.lower() == "image0449.jpg" and photo.exists()
+    assert sketch.name.lower() == "sketch0449.jpg" and sketch.exists()
 
 
 def test_resolve_pair_missing_sketch_raises(tmp_path):
@@ -232,7 +249,7 @@ def test_main_end_to_end(tmp_path, monkeypatch, capsys):
 
     prepare_fs2k.main()
     output = capsys.readouterr().out
-    assert "one folder down" in output
+    assert "sub-folder" in output
 
     with open(tmp_path / "manifests" / "fs2k_split.json", "r", encoding="utf-8") as f:
         split = json.load(f)

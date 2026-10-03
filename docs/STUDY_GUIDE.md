@@ -488,7 +488,7 @@ This is the story to tell if you are asked "how did you approach it?".
 9. **Documentation.** README with run instructions, the IEEE report, this guide, the demo plan.
 10. **Remaining:** publish models as a GitHub Release, test from a fresh clone, record the video, compile the report on Overleaf, submit.
 
-**Reproducibility** (a good thing to point out): the seed 42 is set everywhere, the splits and the validation/test corruptions are stored files, every run is logged, every choice is in the decision log, and `pytest` runs 183 + 73 tests.
+**Reproducibility** (a good thing to point out): the seed 42 is set everywhere, the splits and the validation/test corruptions are stored files, every run is logged, every choice is in the decision log, and `pytest` runs 184 + 73 tests.
 
 ---
 
@@ -528,7 +528,7 @@ The brief says: "The complete application must run locally through Docker Compos
 
 ### 9.5 Tests
 
-`python -m pytest` (183 tests: data, corruptions, models, losses, routing, ONNX export) and `python -m pytest backend/tests` (73 tests: API validation, corruption equivalence with PyTorch, endpoints). Plus manual testing with the guide in `docs/testing_and_outputs_guide.md`.
+`python -m pytest` (184 tests: data, corruptions, models, losses, routing, ONNX export) and `python -m pytest backend/tests` (73 tests: API validation, corruption equivalence with PyTorch, endpoints). Plus manual testing with the guide in `docs/testing_and_outputs_guide.md`.
 
 ---
 
@@ -553,7 +553,7 @@ The brief says: "The complete application must run locally through Docker Compos
 | Training time | Task 1 final: 43 minutes (80 epochs); trials 2 to 6 minutes each |
 | ONNX agreement | largest PyTorch-ONNX difference about 1e-6 or less (limit 1e-4) |
 | ONNX file sizes | Task 1 31 MB; classifier 1.2 MB; each specialist 30 MB; Task 3 91 MB; generator 168 MB |
-| Tests | 183 + 73 |
+| Tests | 184 + 73 |
 | Latency (measured in the Docker backend on your laptop CPU) | Task 1 about 40 ms; hard routing about 90 ms; soft MoE about 120 ms; sketch about 40 ms |
 
 ---

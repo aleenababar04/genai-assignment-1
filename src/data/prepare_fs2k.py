@@ -71,12 +71,17 @@ def read_annotations(json_path) -> list[dict]:
 
 def find_image(path_without_extension: Path) -> Path:
     """Return the file with a .jpg extension, or else .png (as the official
-    FS2K tool does). Raise FileNotFoundError if neither exists."""
-    for extension in [".jpg", ".png"]:
+    FS2K tool does). Raise FileNotFoundError if neither exists.
+
+    The extension may be written in capitals: FS2K contains files such as
+    photo3/image0449.JPG. Windows ignores letter case but Linux (Kaggle,
+    Docker) does not, so both spellings are tried explicitly.
+    """
+    for extension in [".jpg", ".png", ".JPG", ".PNG", ".jpeg", ".JPEG"]:
         path = path_without_extension.with_name(path_without_extension.name + extension)
         if path.exists():
             return path
-    raise FileNotFoundError(f"Missing image: {path_without_extension}.jpg (or .png)")
+    raise FileNotFoundError(f"Missing image: {path_without_extension}.jpg (or .png, in any letter case)")
 
 
 def resolve_pair(root, name) -> tuple[Path, Path]:

@@ -2107,8 +2107,14 @@ photo and sketch, on a synthetic FS2K tree). An end-to-end CPU smoke run on a
 tiny fake cache covered the Optuna trial, final training, evaluation and ONNX
 export (maximum difference $5.96\times10^{-8}$); its outputs were deleted.
 The real Kaggle training worked, but the test-set evaluation on Kaggle failed
-with a missing test-cache file (the cause was not established); it was rerun
-locally on the same split after the FS2K download. Running the preparation
+with a missing test-cache file. The cause, found later from the log of a
+second Kaggle run, was a bug in the tool's code: the dataset contains a file
+named \file{photo3/image0449.JPG} (capital extension), which the code looked
+up only as \file{.jpg}; Windows ignores letter case but Kaggle's Linux does
+not. The lookup now also tries capital extensions (a test was added), and the
+test evaluation was rerun locally on the same split after the FS2K download.
+While fixing it, a test left failing after an earlier change to the folder
+search was also corrected (184 tests pass). Running the preparation
 script on the real download showed that the zip unpacks into nested
 \file{FS2K} folders, so the folder search was made recursive; the layout
 otherwise matched what the tool had read on the FS2K page (899/159/1,046

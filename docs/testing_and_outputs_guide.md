@@ -26,7 +26,7 @@ The gallery shows every figure with a plain-English "what it shows / how to read
 ## 1. Automated tests
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q                  # training code: expect "183 passed"
+.venv\Scripts\python.exe -m pytest -q                  # training code: expect "184 passed"
 .venv\Scripts\python.exe -m pytest backend/tests -q    # backend:       expect "73 passed"
 ```
 
@@ -233,7 +233,7 @@ docker compose up --build                  # first start takes a few minutes
 
 Before submitting, everything here should be ticked.
 
-- [ ] `pytest` (183 passed) and `pytest backend/tests` (73 passed)
+- [ ] `pytest` (184 passed) and `pytest backend/tests` (73 passed)
 - [ ] App starts from a fresh clone with one command; **7 of 7 models loaded**
 - [ ] All four workspaces tested with your own images, including a download from each
 - [ ] Error cases (PDF upload, oversized file, backend stopped) handled without a crash
