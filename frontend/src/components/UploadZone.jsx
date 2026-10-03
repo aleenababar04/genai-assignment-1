@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import Icon from "./Icon.jsx";
 
 // Dashed drag-and-drop zone. Clicking it opens the file browser.
 // Props:
@@ -28,9 +29,9 @@ export default function UploadZone({ selected, error, onFile, disabled, prompt =
   }
 
   // Colours for the three looks: error (red), dragging (indigo), normal (grey).
-  let look = "border-slate-300 bg-slate-50 hover:border-indigo-400";
-  if (error) look = "border-red-400 bg-red-50";
-  else if (dragging) look = "border-indigo-500 bg-indigo-50";
+  let look = "border-line-strong bg-page hover:border-primary";
+  if (error) look = "border-red-300 bg-red-50";
+  else if (dragging) look = "border-primary bg-primary-soft";
 
   return (
     <div
@@ -44,7 +45,7 @@ export default function UploadZone({ selected, error, onFile, disabled, prompt =
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-4 text-center ${look} ${
+      className={`group flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 text-center transition-all ${look} ${
         disabled ? "cursor-not-allowed opacity-60" : ""
       }`}
     >
@@ -59,34 +60,30 @@ export default function UploadZone({ selected, error, onFile, disabled, prompt =
 
       {error ? (
         <>
-          <span className="flex size-7 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white">!</span>
-          <p className="font-mono text-xs text-red-700">{error.name}</p>
-          <p className="text-sm text-red-700">{error.message}</p>
-          <span className="text-sm font-medium text-indigo-600 underline">Choose another file</span>
+          <span className="flex size-10 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 shadow-xs">
+            <Icon name="error" size={20} />
+          </span>
+          <p className="max-w-full truncate font-mono text-mono-md text-red-700">{error.name}</p>
+          <p className="text-body-sm text-red-700">{error.message}</p>
+          <span className="text-body-sm font-semibold text-primary underline">Choose another file</span>
         </>
       ) : selected ? (
         <>
-          <img src={selected.previewUrl} alt="" className="size-14 rounded-md border border-slate-200 object-cover" />
-          <p className="max-w-full truncate font-mono text-xs text-slate-700">{selected.name}</p>
-          <span className="text-xs text-indigo-600 underline">Choose another file</span>
+          <img src={selected.previewUrl} alt="" className="size-14 rounded-lg border border-line object-cover shadow-xs" />
+          <p className="max-w-full truncate font-mono text-mono-md text-ink">{selected.name}</p>
+          <span className="text-body-sm font-semibold text-primary underline">Choose another file</span>
         </>
       ) : (
         <>
-          <UploadIcon />
-          <p className="text-sm text-slate-700">
-            {prompt} <span className="font-medium text-indigo-600 underline">browse</span>
+          <span className="flex size-10 items-center justify-center rounded-full border border-line bg-white text-primary shadow-xs transition-transform group-hover:scale-105">
+            <Icon name="cloud_upload" size={20} />
+          </span>
+          <p className="text-body-sm font-semibold text-ink transition-colors group-hover:text-primary">
+            {prompt} <span className="text-primary underline">browse</span>
           </p>
         </>
       )}
-      <p className="text-xs text-slate-500">PNG or JPG</p>
+      <p className="font-mono text-mono-sm text-muted">PNG or JPG (resized to 128x128)</p>
     </div>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg className="size-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }

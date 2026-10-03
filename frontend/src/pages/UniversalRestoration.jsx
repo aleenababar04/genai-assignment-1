@@ -12,18 +12,30 @@ export default function UniversalRestoration({ health, samples, onDone }) {
 
   return (
     <div>
-      <PageHeader title="Universal Restoration" subtitle="One autoencoder restores any corruption." />
+      <PageHeader
+        title="Universal Restoration"
+        badge="Pipeline 01: All corruptions"
+        badgeIcon="layers"
+        subtitle="One autoencoder restores any corruption: a single network trained on salt-and-pepper noise, Gaussian blur and rectangular occlusion."
+      />
       <ModelNotice health={health} required={REQUIRED_MODELS.universal} />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <InputPanel workspace={workspace} samples={samples} backendOnline={health.status !== "offline"} />
-        <div className="min-w-0 flex-1">
-          <RestoreResultCard
-            workspace={workspace}
-            outputLabel="Restored output"
-            filename="universal_restoration.png"
-          />
-        </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <InputPanel
+          workspace={workspace}
+          samples={samples}
+          backendOnline={health.status !== "offline"}
+          buttonLabel="Restore Tensor"
+          buttonIcon="auto_fix_high"
+        />
+        <RestoreResultCard
+          workspace={workspace}
+          outputLabel="Restored output"
+          filename="universal_restoration.png"
+          flowLabel="Restore"
+          outputBadge={() => "Autoencoder"}
+          models={REQUIRED_MODELS.universal}
+        />
       </div>
     </div>
   );

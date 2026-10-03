@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PrimaryButton, SecondaryButton } from "./Buttons.jsx";
+import Icon from "./Icon.jsx";
 
 // Size of the captured square photo. The backend resizes it to 128x128 anyway.
 const CAPTURE_SIZE = 512;
@@ -64,7 +65,7 @@ export default function WebcamCapture({ onCapture, disabled }) {
   return (
     <div className="flex flex-col gap-3">
       {/* Live preview. Mirrored so it behaves like a mirror; the capture itself is not mirrored. */}
-      <div className="relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-line bg-slate-900 shadow-inner">
         <video
           ref={videoRef}
           autoPlay
@@ -74,29 +75,48 @@ export default function WebcamCapture({ onCapture, disabled }) {
         />
         {running ? (
           <>
-            <span className="absolute top-2 left-2 rounded bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">Live</span>
-            {/* Faint centred square crop guide */}
-            <div className="pointer-events-none absolute inset-[15%] rounded-lg border border-dashed border-white/50" />
+            <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+              <span className="size-2 animate-pulse rounded-full bg-white" />
+              Live
+            </span>
+            <span className="absolute top-2.5 right-2.5 rounded border border-white/20 bg-black/50 px-2 py-0.5 font-mono text-mono-sm text-white backdrop-blur-xs">
+              Mirrored preview
+            </span>
+            {/* Crop guide: the captured centre square, scaled to 128 x 128 by the backend */}
+            <div className="pointer-events-none absolute inset-[8%] flex flex-col items-center justify-between rounded-lg border-2 border-dashed border-white/80 p-1.5">
+              <span className="rounded bg-black/60 px-1 font-mono text-[9px] text-white/90">Captured area → 128 × 128</span>
+            </div>
           </>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-slate-300">
-            Camera is off.
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
+            <span className="flex size-12 items-center justify-center rounded-full bg-white/10 text-slate-300">
+              <Icon name="videocam_off" size={24} />
+            </span>
+            <p className="text-body-sm font-medium text-slate-200">Camera is off.</p>
+            <p className="font-mono text-mono-sm text-slate-400">Start the camera to take a photo</p>
           </div>
         )}
       </div>
 
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-body-sm text-red-700">
+          <Icon name="error" size={16} className="mt-px text-red-600" />
+          {error}
+        </p>
+      )}
 
       {running ? (
         <div className="flex gap-2">
-          <PrimaryButton onClick={capture} disabled={disabled} className="flex-1">
-            <CameraIcon /> Capture
+          <PrimaryButton icon="photo_camera" onClick={capture} disabled={disabled} size="sm" className="flex-1">
+            Capture
           </PrimaryButton>
-          <SecondaryButton onClick={stopCamera}>Stop camera</SecondaryButton>
+          <SecondaryButton icon="videocam_off" onClick={stopCamera} className="h-9">
+            Stop camera
+          </SecondaryButton>
         </div>
       ) : (
-        <PrimaryButton onClick={startCamera} loading={starting} loadingText="Starting camera..." disabled={disabled}>
-          <CameraIcon /> Start camera
+        <PrimaryButton icon="photo_camera" onClick={startCamera} loading={starting} loadingText="Starting camera..." disabled={disabled} size="sm">
+          Start camera
         </PrimaryButton>
       )}
     </div>
@@ -115,13 +135,4 @@ function cameraErrorMessage(err) {
     return "The camera is being used by another application. Close it and try again.";
   }
   return `Could not start the camera (${err.message || err.name}).`;
-}
-
-function CameraIcon() {
-  return (
-    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M4 8h3l2-3h6l2 3h3v11H4z" strokeLinejoin="round" />
-      <circle cx="12" cy="13" r="3.5" />
-    </svg>
-  );
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getHealth, getSamples } from "./api.js";
 import { PAGES } from "./constants.js";
 import Sidebar from "./components/Sidebar.jsx";
+import TopBar, { Footer } from "./components/TopBar.jsx";
 import OfflineBanner from "./components/OfflineBanner.jsx";
 import Overview from "./pages/Overview.jsx";
 import UniversalRestoration from "./pages/UniversalRestoration.jsx";
@@ -73,18 +74,26 @@ export default function App() {
   const workspaceProps = { health, samples, onDone: refreshHealth };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 lg:flex">
-      <Sidebar currentPage={page} health={health} />
+    <div className="flex min-h-screen flex-col bg-page font-sans text-body-md text-ink antialiased">
+      <TopBar health={health} />
 
-      <main className="min-w-0 flex-1 p-6 lg:p-8">
-        {health.status === "offline" && <OfflineBanner onRetry={refreshHealth} />}
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <Sidebar currentPage={page} health={health} />
 
-        {page === "overview" && <Overview health={health} />}
-        {page === "universal" && <UniversalRestoration {...workspaceProps} />}
-        {page === "hard-routed" && <HardRoutedRestoration {...workspaceProps} />}
-        {page === "soft-moe" && <SoftMoERestoration {...workspaceProps} />}
-        {page === "face-to-sketch" && <FaceToSketch {...workspaceProps} />}
-      </main>
+        <main className={`flex min-w-0 flex-1 flex-col ${page === "overview" ? "p-6 lg:p-8" : "p-6"}`}>
+          {health.status === "offline" && <OfflineBanner onRetry={refreshHealth} />}
+
+          {page === "overview" && <Overview health={health} />}
+          {page === "universal" && <UniversalRestoration {...workspaceProps} />}
+          {page === "hard-routed" && <HardRoutedRestoration {...workspaceProps} />}
+          {page === "soft-moe" && <SoftMoERestoration {...workspaceProps} />}
+          {page === "face-to-sketch" && <FaceToSketch {...workspaceProps} />}
+
+          <div className="mt-auto">
+            <Footer />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

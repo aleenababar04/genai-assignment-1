@@ -5,38 +5,52 @@
 
 // The four categories. The classifier classes ("clean", ...) and the soft-MoE
 // branches ("identity", ...) share colours: clean <-> identity.
+// Colours follow the Stitch "model degradation categories":
+// Clean #10B981, Salt-and-pepper #F59E0B, Blur #06B6D4, Occlusion #D946EF.
 export const CATEGORIES = {
   clean: {
     label: "Clean",
     expert: "Identity / clean branch",
     bar: "bg-emerald-500",
     text: "text-emerald-700",
+    accent: "text-emerald-500",
     soft: "bg-emerald-50",
     border: "border-emerald-500",
+    softBorder: "border-emerald-200",
+    track: "bg-emerald-100",
   },
   salt_pepper: {
     label: "Salt-and-pepper",
     expert: "Salt-and-pepper expert",
     bar: "bg-amber-500",
     text: "text-amber-700",
+    accent: "text-amber-500",
     soft: "bg-amber-50",
     border: "border-amber-500",
+    softBorder: "border-amber-200",
+    track: "bg-amber-100",
   },
   blur: {
     label: "Blur",
     expert: "Blur expert",
     bar: "bg-cyan-500",
     text: "text-cyan-700",
+    accent: "text-cyan-500",
     soft: "bg-cyan-50",
     border: "border-cyan-500",
+    softBorder: "border-cyan-200",
+    track: "bg-cyan-100",
   },
   occlusion: {
     label: "Occlusion",
     expert: "Occlusion expert",
     bar: "bg-fuchsia-500",
     text: "text-fuchsia-700",
+    accent: "text-fuchsia-500",
     soft: "bg-fuchsia-50",
     border: "border-fuchsia-500",
+    softBorder: "border-fuchsia-200",
+    track: "bg-fuchsia-100",
   },
 };
 // The soft-MoE "identity" branch uses the clean colours.
@@ -47,11 +61,12 @@ export const CLASS_ORDER = ["clean", "salt_pepper", "blur", "occlusion"];
 export const BRANCH_ORDER = ["identity", "salt_pepper", "blur", "occlusion"];
 
 // Corruption options of the input panel (values are the backend form values).
+// `short` and `hint` are the two lines shown on the option cards; `category` picks the colour dot.
 export const CORRUPTIONS = [
-  { value: "none", label: "None" },
-  { value: "salt_pepper", label: "Salt-and-pepper noise" },
-  { value: "blur", label: "Gaussian blur" },
-  { value: "occlusion", label: "Rectangular occlusion" },
+  { value: "none", label: "None", short: "None", hint: "Ground truth", category: "clean" },
+  { value: "salt_pepper", label: "Salt-and-pepper noise", short: "Salt & Pepper", hint: "Impulsive", category: "salt_pepper" },
+  { value: "blur", label: "Gaussian blur", short: "Gaussian Blur", hint: "Gaussian kernel", category: "blur" },
+  { value: "occlusion", label: "Rectangular occlusion", short: "Occlusion", hint: "Synthetic boxes", category: "occlusion" },
 ];
 
 export const SEVERITIES = [
@@ -61,12 +76,13 @@ export const SEVERITIES = [
 ];
 
 // Navigation: hash route -> page title. The workspace names must stay exact.
+// `icon` is a Material Symbols name (as in the Stitch screens).
 export const PAGES = [
-  { id: "overview", title: "Overview" },
-  { id: "universal", title: "Universal Restoration" },
-  { id: "hard-routed", title: "Hard-Routed Restoration" },
-  { id: "soft-moe", title: "Soft Mixture-of-Experts Restoration" },
-  { id: "face-to-sketch", title: "Face-to-Sketch Generator" },
+  { id: "overview", title: "Overview", icon: "dashboard" },
+  { id: "universal", title: "Universal Restoration", icon: "auto_fix_high" },
+  { id: "hard-routed", title: "Hard-Routed Restoration", icon: "alt_route" },
+  { id: "soft-moe", title: "Soft Mixture-of-Experts Restoration", icon: "hub" },
+  { id: "face-to-sketch", title: "Face-to-Sketch Generator", icon: "draw" },
 ];
 
 // ONNX files each workspace needs (names match backend/app/models.py).

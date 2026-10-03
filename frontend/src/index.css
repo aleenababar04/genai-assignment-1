@@ -1,11 +1,69 @@
 /* Tailwind CSS v4: one import brings in the whole framework. */
 @import "tailwindcss";
 
-/* Fonts from the design system: Inter for text, a monospace font for numbers.
-   These become the `font-sans` and `font-mono` utility classes. */
+/* Design tokens taken from the Google Stitch export (report/figures/stitch/*.html).
+   Colours: the Stitch palette maps onto Tailwind's slate/indigo scale, so only the
+   brand colours are added here. Type scale: the Stitch "headline/body/label" sizes. */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-primary: #4f46e5; /* Primary Indigo */
+  --color-primary-hover: #4338ca;
+  --color-primary-soft: #f2f3ff; /* active nav item / selected option */
+  --color-page: #f8fafc; /* Page BG */
+  --color-ink: #0f172a; /* Text Primary */
+  --color-muted: #64748b; /* Secondary Text */
+  --color-line: #e2e8f0; /* Border */
+  --color-line-strong: #cbd5e1;
+  --color-online: #16a34a; /* Status Online */
+
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+
+  --text-headline-xl: 30px;
+  --text-headline-xl--line-height: 36px;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 600;
+  --text-headline-lg: 22px;
+  --text-headline-lg--line-height: 28px;
+  --text-headline-lg--letter-spacing: -0.015em;
+  --text-headline-lg--font-weight: 600;
+  --text-headline-md: 18px;
+  --text-headline-md--line-height: 24px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm: 15px;
+  --text-headline-sm--line-height: 20px;
+  --text-headline-sm--font-weight: 600;
+  --text-body-lg: 15px;
+  --text-body-lg--line-height: 22px;
+  --text-body-md: 13px;
+  --text-body-md--line-height: 18px;
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 16px;
+  --text-label-ui: 11px;
+  --text-label-ui--line-height: 14px;
+  --text-label-ui--letter-spacing: 0.04em;
+  --text-label-ui--font-weight: 500;
+  --text-mono-lg: 13px;
+  --text-mono-lg--line-height: 18px;
+  --text-mono-lg--letter-spacing: -0.01em;
+  --text-mono-md: 11px;
+  --text-mono-md--line-height: 16px;
+  --text-mono-md--letter-spacing: 0.02em;
+  --text-mono-sm: 10px;
+  --text-mono-sm--line-height: 14px;
+  --text-mono-sm--letter-spacing: 0.04em;
+}
+
+/* Material Symbols icon font (loaded in index.html). */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
+  line-height: 1;
+  user-select: none;
+}
+.material-symbols-outlined.filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 20;
 }
 
 /* The 128x128 model images are shown enlarged; keep sharp pixel edges. */

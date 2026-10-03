@@ -1,3 +1,5 @@
+import Icon from "./Icon.jsx";
+
 // "Sketch style": three selectable cards, Style 1 / Style 2 / Style 3.
 // The preview is a small drawn face whose line style differs per style; it is only
 // a hint, not real model output. Replace it with real example sketches if you have them.
@@ -19,12 +21,21 @@ export default function StyleSelector({ value, onChange, disabled }) {
             disabled={disabled}
             aria-pressed={selected}
             onClick={() => onChange(style.value)}
-            className={`flex flex-col items-center gap-1 rounded-lg p-2 disabled:cursor-not-allowed disabled:opacity-60 ${
-              selected ? "border-2 border-indigo-600 bg-indigo-50" : "border-2 border-slate-200 bg-white hover:bg-slate-50"
+            className={`group relative flex flex-col items-center rounded-lg p-2 transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+              selected
+                ? "border-2 border-primary bg-indigo-50/30 shadow-xs"
+                : "border border-line bg-white hover:border-line-strong hover:shadow-xs"
             }`}
           >
-            <FacePreview stroke={style.stroke} dash={style.dash} />
-            <span className={`text-sm ${selected ? "font-semibold text-indigo-700" : "text-slate-700"}`}>{style.label}</span>
+            {selected && (
+              <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-white shadow-xs">
+                <Icon name="check" size={12} />
+              </span>
+            )}
+            <FacePreview stroke={style.stroke} dash={style.dash} selected={selected} />
+            <span className={`text-label-ui ${selected ? "font-bold text-primary" : "font-medium text-ink group-hover:text-primary"}`}>
+              {style.label}
+            </span>
           </button>
         );
       })}
@@ -32,12 +43,14 @@ export default function StyleSelector({ value, onChange, disabled }) {
   );
 }
 
-function FacePreview({ stroke, dash }) {
+function FacePreview({ stroke, dash, selected }) {
   return (
-    <svg viewBox="0 0 40 40" className="size-12 rounded bg-white text-slate-700" fill="none" stroke="currentColor"
-      strokeWidth={stroke} strokeDasharray={dash} strokeLinecap="round" aria-hidden="true">
-      <ellipse cx="20" cy="21" rx="11" ry="14" />
-      <path d="M14 18h3M23 18h3M20 20v5M16 29q4 3 8 0" />
-    </svg>
+    <div className={`mb-1.5 aspect-square w-full overflow-hidden rounded border bg-slate-50 ${selected ? "border-indigo-200" : "border-line"}`}>
+      <svg viewBox="0 0 40 40" className="size-full text-slate-700" fill="none" stroke="currentColor"
+        strokeWidth={stroke} strokeDasharray={dash} strokeLinecap="round" aria-hidden="true">
+        <ellipse cx="20" cy="21" rx="11" ry="14" />
+        <path d="M14 18h3M23 18h3M20 20v5M16 29q4 3 8 0" />
+      </svg>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import { CATEGORIES, CORRUPTIONS } from "../constants.js";
+import Icon from "./Icon.jsx";
 
 // Shows the backend's corruption settings dict as a row of chips, e.g.
 // {type: "blur", severity: "medium", kernel_size: 5, sigma: 1.5, seed: 42}
@@ -26,22 +27,23 @@ export default function CorruptionChips({ settings }) {
   const category = CATEGORIES[settings.type === "none" ? "clean" : settings.type];
 
   return (
-    <div>
-      <p className="mb-2 text-xs font-medium text-slate-500">Corruption settings</p>
-      <div className="flex flex-wrap gap-2">
-        {entries.map(([key, value]) => {
-          const [label, format] = FIELDS[key] ?? [key, (v) => String(v)];
-          const colour =
-            key === "type" && category
-              ? `${category.soft} ${category.text} ${category.border}`
-              : "border-slate-200 bg-slate-50 text-slate-700";
-          return (
-            <span key={key} className={`rounded-full border px-3 py-1 text-xs ${colour}`}>
-              {label}: <span className={typeof value === "number" ? "font-mono" : "font-medium"}>{format(value)}</span>
-            </span>
-          );
-        })}
-      </div>
+    <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
+      <span className="pr-1 text-label-ui font-semibold tracking-wider text-muted uppercase">Corruption settings:</span>
+      {entries.map(([key, value]) => {
+        const [label, format] = FIELDS[key] ?? [key, (v) => String(v)];
+        const isType = key === "type" && category;
+        const colour = isType
+          ? `${category.soft} ${category.text} ${category.softBorder}`
+          : "border-line bg-slate-100 text-ink";
+        return (
+          <span key={key} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-mono-sm ${colour}`}>
+            {isType && <span className={`size-1.5 rounded-full ${category.bar}`} />}
+            {key === "severity" && <Icon name="tune" size={12} className="text-muted" />}
+            <span className={isType ? "" : "text-muted"}>{label}:</span>
+            <span className={`font-semibold ${typeof value === "number" ? "text-primary" : ""}`}>{format(value)}</span>
+          </span>
+        );
+      })}
     </div>
   );
 }
