@@ -1,0 +1,35 @@
+# RestoreLab: FastAPI backend + React frontend.
+#
+#   docker compose up --build
+#   then open http://localhost:8080
+#
+# Put the exported ONNX files in ./models before starting (missing models are
+# reported by /api/health and the matching workspace shows an error).
+
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - ./models:/app/models:ro
+      - ./backend/samples:/app/samples:ro
+    # The frontend proxies /api to the backend, so its port is not published.
+    # Uncomment to call the API directly (e.g. http://localhost:8000/docs) while debugging.
+    # ports:
+    #   - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      start_interval: 5s  # check every 5 s during start-up so the frontend starts sooner
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

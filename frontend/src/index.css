@@ -1,0 +1,14 @@
+/* Tailwind CSS v4: one import brings in the whole framework. */
+@import "tailwindcss";
+
+/* Fonts from the design system: Inter for text, a monospace font for numbers.
+   These become the `font-sans` and `font-mono` utility classes. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* The 128x128 model images are shown enlarged; keep sharp pixel edges. */
+.pixelated {
+  image-rendering: pixelated;
+}
