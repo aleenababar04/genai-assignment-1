@@ -1595,9 +1595,16 @@ device, 15.75\,GB RAM), so it runs a CPU-only PyTorch build
 (\texttt{torch 2.14.1+cpu}) for development, unit tests and inference. All
 training runs in Kaggle GPU notebooks, which clone the repository and call
 the same command-line scripts; Google Colab was kept as a fallback.
-% TODO(results): Kaggle GPU model, session limits, and epoch timings.
-\TODO{State the Kaggle GPU model and, if measured, the time per epoch on the
-laptop CPU vs.\ the Kaggle GPU for the same configuration.}
+The wall-clock times below are taken from the W\&B run records; each epoch
+includes its validation pass. The final trainings took 43\,min for the
+Task~1 autoencoder (80 epochs; 44\,min for the skip variant), 2.8\,min for the
+classifier (25 epochs), about 19.5\,min for each specialist (40 epochs),
+22\,min for the mixture (17 epochs) and 34\,min for the GAN (100 epochs). The
+Optuna searches took 114, 7, 33, 50 and 21\,min for Tasks~1, 2 (classifier),
+2 (specialists), 3 and 4 respectively. A Task~1 epoch on the laptop CPU
+would take far longer, which is why all training ran on the GPU.
+% TODO(results): Kaggle GPU model; update the GAN time if the 200-epoch retraining is adopted.
+\TODO{State the Kaggle GPU model.}
 
 \subsection{Experiment tracking and Optuna}
 Every Optuna trial, final training run and evaluation is a W\&B run in the
