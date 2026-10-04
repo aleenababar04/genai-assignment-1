@@ -158,7 +158,7 @@ All training runs, Optuna trials, evaluation results and checkpoints are logged 
 
 ## Report and demo video
 
-- Report: IEEE-format LaTeX source in `report/main.tex` (compile with pdfLaTeX and BibTeX; `python scripts/make_overleaf_zip.py` packs it for Overleaf). The compiled PDF is submitted on Google Classroom.
+- Report: IEEE-format LaTeX source in `report/main.tex` (compile with pdfLaTeX and BibTeX; `python scripts/make_overleaf_zip.py` packs it for Overleaf). Compiled PDF: `report/GenAI_Assignment1_Report_23I-0628.pdf`.
 - Demo video: https://youtu.be/U_9R4x1TlWg
 
 ## Acknowledgements and AI use
