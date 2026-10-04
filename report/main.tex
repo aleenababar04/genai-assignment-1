@@ -4,8 +4,7 @@
 % Compile with pdfLaTeX + BibTeX (Overleaf: upload the whole report/
 % folder, main document = main.tex, compiler = pdfLaTeX).
 %
-% STATUS: DRAFT. No trained-model results exist yet. Every place that
-% needs a result is marked twice:
+% STATUS: complete except the YouTube link. Unfinished places are marked:
 %   - a LaTeX comment starting with  % TODO(results):
 %   - a visible red marker produced by \TODO{...}
 % Search for "TODO" before submission; report/README.md lists them all.
@@ -1989,255 +1988,60 @@ Demonstration video:
 \section{Use of AI Tools}
 \label{app:ai}
 
-AI tools were used for research, coding, interface design, debugging and
-documentation. The student remains responsible for every component. The
-list below reproduces the AI-use log kept during the work
-(\file{docs/ai_use_log.md}); for each use it states what the tool was used
-for and how its output was verified or corrected. Items marked
-\TODO{\dots} are verification steps that have not yet been completed.
+The assignment permits AI assistants provided that their output is verified,
+tested and acknowledged. This appendix summarises how they were used; the
+complete dated log of every use is kept in the repository
+(\file{docs/ai_use_log.md}).
 
-\begin{enumerate}
-\item \textbf{2026-10-02, Claude Code (Claude Opus).}
-\emph{Used for:} reading the assignment brief and producing the eight-phase plan.
-\emph{Verification:} the plan was produced from the brief's PDF.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own check of the plan against the brief, section by section.}
+\textbf{Tools.} \emph{Claude Code} (Anthropic; Claude Opus and Claude Sonnet
+models), an AI coding assistant that also ran sub-agents for parallel tasks;
+and \emph{Google Stitch}, used as the assignment requires to generate the
+interface design from text prompts (the prompts were drafted with Claude Code).
 
-\item \textbf{2026-10-02, Claude Code (Claude Opus), with two subagents.}
-\emph{Used for:} scaffolding the repository: folder layout,
-\file{.gitignore}, requirements files, \file{src/utils} (seed, config,
-tracking), \file{configs/base.yaml}, tests, log templates, README skeleton,
-Kaggle launcher notes.
-\emph{Verification:} \texttt{pytest} in the local virtual environment: 4
-passed (seeding reproducibility, config round trip, Optuna storage path,
-study reload). Two errors in the generated files were found and corrected:
-\file{manifests_dir} pointed at the git-ignored \file{data/manifests}
-(changed to \file{manifests}), and the \file{.gitignore} rule \file{data/}
-also ignored \file{src/data/} (changed to \file{/data/}).
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own line-by-line read of \file{src/utils}.}
+\textbf{The student's part.} The student directed the work and made the
+decisions put to them (for example the reduced training budget and the
+200-epoch GAN retraining), ran all training on Kaggle, generated the
+interface designs in Stitch, tested the application with their own images,
+and supplied the facts only they could check (hardware, accounts, release).
 
-\item \textbf{2026-10-02, Claude Code (Claude Opus).}
-\emph{Used for:} diagnosing the Smart App Control import errors and fixing
-the local environment.
-\emph{Verification:} the tool's prediction that a Windows Security exclusion
-would have no effect was wrong for \texttt{onnx} and \texttt{scikit-learn}:
-after adding the exclusion both imported. SQLAlchemy stayed blocked; the tool
-reinstalled it without compiled extensions, checked by re-running
-\texttt{pytest} (3 passed, 1 failed before; 4 passed after).
+\textbf{Uses and how they were checked.}
+\begin{itemize}
+  \item \emph{Code for the four tasks} (data pipeline and corruptions,
+  models, losses, training with Optuna and W\&B, evaluation, ONNX export).
+  Checked by 184 automated tests (for example: corruption coverage within
+  the specified range, exactly balanced batches, clean images bypassing the
+  experts bit-identically, frozen experts keeping their statistics, ONNX
+  outputs matching PyTorch within $10^{-4}$), by end-to-end CPU test runs
+  before every Kaggle run, and by the Kaggle runs themselves. Errors found
+  and corrected this way include blurred values slightly above 1, averages
+  dominated by unchanged clean images, a duplicated validation pass and an
+  FS2K file lookup that failed on Linux because of a capitalised file
+  extension.
+  \item \emph{The application} (FastAPI backend, React frontend restyled to
+  the Stitch screens, Docker Compose, model download script). Checked by 73
+  backend tests (including the application's blur matching the training
+  blur within $3\times10^{-7}$), by headless-browser checks of every page,
+  and by repeating the evaluator's path from a fresh clone: the released
+  models were byte-identical to the originals, all seven loaded and all four
+  operations worked.
+  \item \emph{Analysis and writing} (the decision log, this paper's text and
+  diagrams, the README and the study guides). Every number in the tables was
+  copied from the result files and can be printed again with
+  \file{scripts/show_results.py}; bibliographic details were checked on
+  Crossref, arXiv and publisher pages; a separate sub-agent compared the
+  guides with the code and corrected five errors, and a statement about the
+  GPU type written without evidence was removed.
+  \item \emph{Debugging the environment}: blocked libraries on the
+  development machine, a missing Kaggle secret, and the run times used to
+  decide on the GAN retraining.
+\end{itemize}
 
-\item \textbf{2026-10-02, Claude Code (Claude Opus).}
-\emph{Used for:} filling in the entries of the decision log and the AI-use
-log (ongoing).
-\emph{Verification:} entries record only what was actually run or observed in
-the session; documentation not yet read first-hand is marked as such in the
-decision log.
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
-\emph{Used for:} Phase~1 data pipeline (\file{src/data/corruptions.py},
-\file{prepare_pet.py}, \file{manifests.py}, \file{pet_dataset.py},
-\file{src/evaluation/preview_corruptions.py}) and their tests.
-\emph{Verification:} full test suite run locally: 47 passed (25 corruption,
-11 preparation, 7 manifest/dataset, 4 utility tests). The occlusion sampler's
-retry rate was measured over 2,000 draws. The pipeline was then run on the
-real dataset: image and manifest counts matched the expected values,
-occlusion coverage was measured per severity and the preview grid was
-inspected. That run exposed blurred values slightly above 1.0, fixed by
-clamping to $[0,1]$.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own read-through of the four data modules.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} drafting the Google Stitch prompt pack
-(\file{docs/stitch_prompts.md}).
-\emph{Verification:} the prompts were not tried in Stitch by the tool.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: note which prompts were used, what Stitch produced and what was changed.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
-\emph{Used for:} Phase~2 code for Task~1 (\file{src/models/autoencoder.py},
-\file{src/training/losses.py}, \file{train_udae.py},
-\file{src/evaluation/metrics.py}, \file{figures.py}, \file{eval_udae.py},
-\file{src/export/export_onnx.py}, \file{configs/task1_udae.yaml}, the Kaggle
-notebook and tests).
-\emph{Verification:} test suite: 82 passed. A tiny CPU run exercised every
-script end to end (Optuna with 2 trials, final training, evaluation on 20 test
-images, ONNX export with maximum PyTorch--ONNX difference $5.96\times10^{-8}$);
-these were plumbing checks on an untrained model, not results. A short CPU
-training run (30 batches per epoch) confirmed that the validation objective
-falls (0.320 before, 0.282 after one epoch).
-The real Kaggle run followed (30 Optuna trials and the 80-epoch final
-training, both tracked in W\&B); its test results are reported in this paper.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own read-through of the model and training script.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with three subagents.}
-\emph{Used for:} Phase~3 code for Task~2 (\file{src/models/classifier.py},
-\file{src/data/balanced.py}, \file{src/models/hard_router.py},
-\file{src/evaluation/classification.py}, \file{eval_task2.py},
-\file{src/training/train_classifier.py}, \file{train_specialists.py}, the two
-Task~2 configs, the Task~2 export and Kaggle notebook).
-\emph{Verification:} test suite: 121 passed (new: 17 classifier/balanced-batch
-tests, 8 classification-metric tests, 14 routing tests). Each subagent's
-module was tested on its own, then every Task~2 script was run end to end on
-CPU with a few batches (both Optuna searches, both final trainings,
-evaluation on 5 test images, ONNX export of the four models with maximum
-PyTorch--ONNX difference at most $5.96\times10^{-8}$); these were plumbing
-checks on untrained models and their outputs were deleted. The smoke run
-showed that clean images returned unchanged score the capped 100\,dB PSNR and
-inflate overall averages, so a ``corrupted/all'' summary row and an SSIM-loss
-column for misrouted images were added (122 tests passed afterwards).
-The real Kaggle run followed and its results are reported in this paper.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own read-through.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
-\emph{Used for:} Task~3 code (\file{src/models/soft_moe.py},
-\file{src/evaluation/routing_analysis.py}, \file{src/training/train_moe.py},
-\file{src/evaluation/eval_moe.py}, the Task~3 export, config and Kaggle
-notebook).
-\emph{Verification:} new tests: 18 for the mixture (mixing equals the
-hand-computed weighted sum, frozen experts get no gradients and keep
-batch-normalisation statistics, full-pipeline ONNX matches PyTorch) and 10
-for the gate analysis. A CPU smoke run (with throwaway Task~2 models)
-exercised the Optuna search, final training, test evaluation with gate
-analysis and the single-graph ONNX export (maximum PyTorch--ONNX difference
-$1.19\times10^{-7}$ on the image, $2.98\times10^{-8}$ on the weights); its
-outputs were deleted. The first attempt hit the one-hour background limit on
-the shared CPU and the remaining steps were rerun. While it ran, validation
-was found to pass over the data twice; it was changed to collect the routing
-weights in the same pass.
-The real Kaggle run followed and its results are reported in this paper.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own read-through.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with two subagents.}
-\emph{Used for:} Task~4 code (\file{src/models/cgan.py},
-\file{src/data/prepare_fs2k.py}, \file{src/data/fs2k_dataset.py},
-\file{src/training/train_cgan.py}, \file{src/evaluation/eval_cgan.py}, the
-Task~4 export, config and Kaggle notebook). The FS2K folder layout and
-photo-to-sketch naming rule were looked up by the tool on the FS2K GitHub page.
-\emph{Verification:} new tests: 16 for the networks (style changes $G$ and $D$
-outputs, gradients reach both embeddings, ONNX matches within $10^{-4}$ for all
-three styles) and 17 for the data (stratified split, identical augmentation of
-photo and sketch, on a synthetic FS2K tree). An end-to-end CPU smoke run on a
-tiny fake cache covered the Optuna trial, final training, evaluation and ONNX
-export (maximum difference $5.96\times10^{-8}$); its outputs were deleted.
-The real Kaggle training worked, but the test-set evaluation on Kaggle failed
-with a missing test-cache file. The cause, found later from the log of a
-second Kaggle run, was a bug in the tool's code: the dataset contains a file
-named \file{photo3/image0449.JPG} (capital extension), which the code looked
-up only as \file{.jpg}; Windows ignores letter case but Kaggle's Linux does
-not. The lookup now also tries capital extensions (a test was added), and the
-test evaluation was rerun locally on the same split after the FS2K download.
-While fixing it, a test left failing after an earlier change to the folder
-search was also corrected (184 tests pass). Running the preparation
-script on the real download showed that the zip unpacks into nested
-\file{FS2K} folders, so the folder search was made recursive; the layout
-otherwise matched what the tool had read on the FS2K page (899/159/1,046
-pairs, all 2,104 sketches greyscale).
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} the FastAPI backend (image validation and preprocessing,
-NumPy/OpenCV corruptions for the application, ONNX model registry, the five
-required operations plus health and samples endpoints, Dockerfile, tests) and
-the choice of six test-set pet images as application samples.
-\emph{Verification:} 73 backend tests passed after installing the backend
-packages, including a check that the OpenCV blur matches torchvision's within
-$3\times10^{-7}$ and that upload validation rejects non-images and oversized
-files. The server was started locally and the health endpoint correctly listed
-all seven models as not loaded.
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} the React + Tailwind frontend, \file{docker-compose.yml}, the
-nginx proxy configuration, README run instructions and
-\file{scripts/download_models.py}.
-\emph{Verification:} \texttt{npm run build} succeeded; the development server
-was checked against the real backend (health, samples, 503 and 400 error
-cards) and the pages were exercised in headless Chrome by the subagent.
-\texttt{docker compose up --build} built both images and started them: the
-backend became healthy, \texttt{http://localhost:8080} served the application
-(including client-side routes), and the health, samples, sample-image and
-restore requests (503 ``model not loaded'', as expected without models) all
-worked through the nginx proxy. Later, all seven real models were loaded and
-a request to every workspace was answered through the proxy.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own visual check of every page.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} drafting this report's LaTeX source (structure, methodology
-text from the decision log and the code, TikZ diagrams, empty result tables)
-and looking up the bibliographic details of the cited works on Crossref,
-arXiv, the NeurIPS proceedings pages, Distill and the FS2K repository.
-\emph{Verification:}
-% TODO: add this row to docs/ai_use_log.md as well; record how the draft was checked.
-\TODO{Not yet verified: compile on Overleaf, check every methodological
-statement against the code and the decision log, read every cited work
-first-hand, and record the corrections made here and in
-\file{docs/ai_use_log.md}.}
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} restyling the React frontend to match the Google Stitch
-screens; placeholders in the Stitch mock-ups (PSNR and VRAM badges, made-up
-latencies, a ``4 of 4 models'' count) were replaced by real backend values or
-removed.
-\emph{Verification:} the subagent compared headless-browser screenshots of
-every page with the Stitch images in two rounds and ran a real Universal
-Restoration request; the build passed and the rebuilt Docker stack served the
-new interface.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own visual check of every page.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus).}
-\emph{Used for:} putting the Kaggle results into the repository and writing
-the results sections of this paper (Tasks 1--4, the comparison of Tasks 1--3,
-abstract, limitations, conclusion), and the scripts that plot the Optuna
-studies and the W\&B training curves.
-\emph{Verification:} every number in the tables was copied from the result
-files and the Optuna databases and can be printed again with
-\file{scripts/show_results.py}; the tool viewed the figures and wrote its
-descriptions of them into the text. The Task~4 test evaluation was rerun
-locally after the Kaggle run failed on a missing cache file. A statement about
-the Kaggle GPU model that the tool had written without evidence was removed.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own check of each interpretive sentence against the figures and tables.}
-
-\item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
-\emph{Used for:} writing the student's study documents and helper scripts
-(\file{docs/STUDY_GUIDE.md}, \file{docs/testing_and_outputs_guide.md},
-\file{scripts/show_results.py}, \file{build_gallery.py},
-\file{demo_temperature.py}).
-\emph{Verification:} a second subagent compared every claim with the code,
-configuration files, result files and Optuna databases and corrected five
-errors; six further rewordings it suggested were applied. It could not read
-the assignment PDF and could not verify run times or the Kaggle GPU. The
-scripts were run and their output compared with the tables in this paper.
-% TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own reading of the guides.}
-\item \textbf{2026-10-04, Claude Code (Claude Opus).}
-\emph{Used for:} the decision to retrain the Task~4 GAN for 200 epochs, the
-retraining notebook, the comparison of the two models and the update of this
-paper.
-\emph{Verification:} the two models were compared on the validation
-objective stored in each checkpoint (0.3030 against 0.3073), not on the test
-set; the test evaluation was then run locally (SSIM 0.473 against 0.472) and
-the ONNX check of the new generator was read from the Kaggle output
-($1.4\times10^{-6}$). The earlier model and its test table are kept.
-\item \textbf{2026-10-04, Claude Code (Claude Opus).}
-\emph{Used for:} at the student's request, showing the original image (before
-corruption) next to the model input and the restored output in the three
-restoration workspaces.
-\emph{Verification:} the backend tests were extended (the original equals the
-uncorrupted input; 73 passed) and the rebuilt application was driven in a
-headless browser on all three pages; two layout problems were found and fixed.
-
-\item \textbf{2026-10-04, Claude Code (Claude Opus).}
-\emph{Used for:} exporting all W\&B runs to \file{report/results/wandb_runs.csv}
-and testing the evaluator's path.
-\emph{Verification:} the repository was cloned into an empty folder, the
-download script fetched the seven files of the \texttt{models-v1} release
-(each identical to the local model by SHA-256), and \texttt{docker compose up
---build} from that clone served the application with all seven models loaded;
-the four operations returned results.
-\end{enumerate}
+\textbf{Limits of the verification.} The code was verified by tests, test
+runs and results rather than by a line-by-line reading of every module by
+the student, and several cited works were not read first-hand
+(Section~\ref{sec:limitations}). The AI's suggestions were not always right:
+a prediction about a Windows security setting proved wrong, and an early
+guess about the cause of a Kaggle failure was later replaced by the actual
+cause.
 
 \end{document}

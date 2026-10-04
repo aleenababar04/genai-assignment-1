@@ -112,7 +112,7 @@ def main():
         problems += 1
         print(f"\nUnbalanced braces: {plain.count('{')} '{{' against {plain.count('}')} '}}'")
 
-    todos = len(re.findall(r"\\TODO\{", code)) - 2  # minus the macro definition and its use in \figOrTodo
+    todos = len(re.findall(r"\\TODO\{", code)) - 1  # minus its use inside the \figOrTodo macro
     print(f"\nRed [TODO] markers left in the text: {todos}")
     print("Static check: " + ("no problems found." if problems == 0 else f"{problems} problem(s) above."))
 
