@@ -138,6 +138,9 @@ def restore(request: Request, operation, file, sample_id, corruption, severity, 
     corrupted, settings = corruptions.apply(clean, corruption, severity, seed)
     result = operation(request.app.state.registry, corrupted)
     response = finish(request, result, corrupted)
+    # The image before the corruption was applied (already resized to 128x128),
+    # so the interface can show original -> model input -> restored output.
+    response["original_image"] = to_png_base64(clean)
     response["corruption"] = settings
     return response
 

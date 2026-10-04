@@ -70,8 +70,8 @@ Use the six sample pets, and **your own photos** too. Tick each row.
 
 | # | Do this | Expected | Pass |
 |---|---|---|---|
-| 1 | Pick a sample, corruption **Salt-and-pepper**, severity **High**, press Restore | Left: image full of black/white dots. Right: clean but slightly smooth. Chips show "Noise probability: 0.15". Inference time about 40 to 100 ms | [ ] |
-| 2 | **Occlusion / Medium** | Left: two black boxes. Right: boxes filled with blurry colours from the surroundings (it guesses; it cannot know what was hidden) | [ ] |
+| 1 | Pick a sample, corruption **Salt-and-pepper**, severity **High**, press Restore | Three panels: the original, the model input full of black/white dots, and the restored output (clean but slightly smooth). Chips show "Noise probability: 0.15". Inference time about 40 to 100 ms | [ ] |
+| 2 | **Occlusion / Medium** | Model input: two black boxes. Output: boxes filled with blurry colours from the surroundings (it guesses; it cannot know what was hidden) | [ ] |
 | 3 | **Gaussian blur / High** | Output slightly sharper but still soft. Little improvement is expected (blur already removed the detail) | [ ] |
 | 4 | **None** | Output is slightly *smoother* than the input. This is the known weakness (the bottleneck loses fine detail) | [ ] |
 | 5 | Press **Download result** | A PNG file downloads and opens | [ ] |

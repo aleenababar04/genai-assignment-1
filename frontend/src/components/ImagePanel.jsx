@@ -6,6 +6,8 @@ import Icon from "./Icon.jsx";
 // States: image (src), loading (skeleton + spinner), empty (dashed placeholder).
 // `pixelated` keeps sharp pixel edges when a 128x128 model image is enlarged.
 // `highlight` gives the output panel its indigo border.
+// `fluid` makes the panel fill its column (square, any width) instead of a fixed 288px,
+// so three panels fit side by side.
 export default function ImagePanel({
   label,
   labelIcon,
@@ -16,10 +18,13 @@ export default function ImagePanel({
   badge,
   tag,
   highlight = false,
+  fluid = false,
   emptyIcon = "image",
   emptyTitle = "No image yet",
   emptyText,
 }) {
+  const width = fluid ? "w-full" : "w-72";
+  const box = fluid ? "w-full aspect-square" : "size-72";
   let content;
   if (loading) {
     content = (
@@ -56,16 +61,21 @@ export default function ImagePanel({
   if (src || loading) frame = highlight && src ? "border-2 border-primary bg-white shadow-sm" : "border border-line-strong bg-white shadow-sm";
 
   return (
-    <figure className="flex flex-col items-center gap-2.5">
-      <figcaption className="flex w-72 items-center justify-between gap-2 px-1">
+    <figure className={`flex flex-col items-center gap-2.5 ${fluid ? "w-full min-w-0" : ""}`}>
+      {/* In fluid mode the panels are narrow, so the badge goes on its own line under the
+          label (clipped if still too wide) and every header has the same height, which keeps
+          the three images aligned. */}
+      <figcaption
+        className={`flex ${width} px-1 ${fluid ? "min-h-12 flex-col items-start gap-1" : "items-center justify-between gap-2"}`}
+      >
         <span className={`flex items-center gap-1 text-body-sm font-semibold ${highlight && src ? "text-primary" : "text-ink"}`}>
           {labelIcon && <Icon name={labelIcon} size={15} className={highlight && src ? "text-primary" : "text-muted"} />}
           {label}
         </span>
-        {badge}
+        {fluid ? badge && <span className="max-w-full overflow-hidden">{badge}</span> : badge}
       </figcaption>
-      <div className={`relative size-72 overflow-hidden rounded-xl ${frame}`}>{content}</div>
-      {caption && <p className="w-72 px-1 text-center font-mono text-mono-sm text-muted">{caption}</p>}
+      <div className={`relative ${box} overflow-hidden rounded-xl ${frame}`}>{content}</div>
+      {caption && <p className={`${width} px-1 text-center font-mono text-mono-sm text-muted`}>{caption}</p>}
     </figure>
   );
 }

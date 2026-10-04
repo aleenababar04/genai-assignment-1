@@ -102,7 +102,7 @@ def test_restore_endpoints(client, endpoint, source):
                                                "severity": "low"})
     assert response.status_code == 200, response.text
     body = response.json()
-    for key in ["input_image", "output_image", "corruption", "inference_ms", *RESTORE_ENDPOINTS[endpoint]]:
+    for key in ["original_image", "input_image", "output_image", "corruption", "inference_ms", *RESTORE_ENDPOINTS[endpoint]]:
         assert key in body, key
     assert "output" not in body
     assert decode(body["input_image"]).shape == decode(body["output_image"]).shape == (128, 128, 3)
@@ -124,6 +124,9 @@ def test_corruption_changes_the_input(client, corruption):
     if corruption == "occlusion":
         assert len(settings["rectangles"]) == 3 and abs(settings["coverage"] - 0.35) <= 0.01
     assert not np.array_equal(decode(body["input_image"]), decode(clean["input_image"]))
+    # The original image is the picture before the corruption: identical to the clean request's input.
+    assert np.array_equal(decode(body["original_image"]), decode(clean["input_image"]))
+    assert np.array_equal(decode(clean["original_image"]), decode(clean["input_image"]))
 
 
 def test_seed_makes_api_corruption_reproducible(client):

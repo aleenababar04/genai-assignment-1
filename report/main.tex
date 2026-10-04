@@ -1812,7 +1812,7 @@ Endpoint & Purpose / response \\
 \midrule
 \texttt{GET /health} & status, loaded models, last inference time \\
 \texttt{GET /samples}, \texttt{/samples/\{id\}} & gallery images \\
-\texttt{POST /restore/universal} & Task 1: input, output, corruption settings, time \\
+\texttt{POST /restore/universal} & Task 1: original, corrupted input, output, corruption settings, time \\
 \texttt{POST /restore/hard-routing} & Task 2: + four probabilities, predicted class, selected expert \\
 \texttt{POST /restore/soft-moe} & Task 3: + four routing weights, top branch \\
 \texttt{POST /sketch} & Task 4: photo and sketch for style 1, 2 or 3 \\
@@ -1832,8 +1832,10 @@ to an overview page and the four workspaces---\emph{Universal Restoration},
 and \emph{Face-to-Sketch Generator}---and shows a system-status card that
 polls the health endpoint every 10\,s. The restoration workspaces accept an
 upload (including an already corrupted image) or a gallery sample, let the
-user choose a corruption and severity, and show the input, the restored
-output, the corruption settings and the inference time; the hard-routing
+user choose a corruption and severity, and show three images side by side
+(the original image, the corrupted image given to the model, and the
+restored output) together with the corruption settings and the inference
+time; the hard-routing
 workspace adds the four class probabilities, the predicted corruption and
 the selected expert, and the mixture workspace shows the four routing
 weights with the strongest contributors highlighted. The sketch workspace

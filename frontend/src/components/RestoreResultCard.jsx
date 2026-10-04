@@ -7,8 +7,9 @@ import DownloadButton from "./DownloadButton.jsx";
 import ErrorCard from "./ErrorCard.jsx";
 import Icon from "./Icon.jsx";
 
-// "Restoration Inspection" card of the three restoration workspaces: input and output
-// panels side by side, corruption settings chips, inference time, model file(s) and download.
+// "Restoration Inspection" card of the three restoration workspaces: original, model input
+// (corrupted) and restored output panels side by side, corruption settings chips,
+// inference time, model file(s) and download.
 // `workspace` is the object returned by useRestoreWorkspace.
 // `flowLabel` is the caption of the arrow between the panels; `outputBadge(result)` the
 // text of the badge above the output panel; `models` the ONNX files the workspace uses.
@@ -29,22 +30,46 @@ export default function RestoreResultCard({ workspace, outputLabel, filename, fl
     <Card title="Restoration Inspection" subtitle="Side-by-side 128×128 pixel comparison">
       {error && <ErrorCard title="The model could not run" message={error} onDismiss={clearError} />}
 
-      <div className="flex flex-wrap items-center justify-center gap-4 rounded-xl border border-line bg-page p-4">
-        {result || !loading ? (
+      {/* Three steps: original (before corruption) -> model input (corrupted) -> restored output.
+          On narrow screens the panels stack and the arrows are hidden. */}
+      <div className="grid grid-cols-1 items-center gap-3 rounded-xl border border-line bg-page p-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]">
+        {result ? (
           <ImagePanel
-            label="Input image"
-            src={result?.input_image}
-            badge={category && <PanelBadge className={`${category.soft} ${category.text} ${category.softBorder}`}>{typeLabel}</PanelBadge>}
+            fluid
+            label="Original image"
+            src={result.original_image}
             tag={<OverlayTag>SRC</OverlayTag>}
-            emptyIcon="image"
-            emptyTitle="No input image"
-            emptyText="Upload or pick a sample"
           />
         ) : (
-          <ImagePanel label="Input image" src={image.source?.previewUrl} pixelated={false} caption="Selected image" />
+          <ImagePanel
+            fluid
+            label="Original image"
+            src={image.source?.previewUrl}
+            pixelated={false}
+            caption={image.source ? "Selected image" : undefined}
+            emptyIcon="image"
+            emptyTitle="No image yet"
+            emptyText="Upload or pick a sample"
+          />
         )}
-        <FlowArrow label={flowLabel} active={Boolean(result || loading)} />
+        <div className="hidden lg:block">
+          <FlowArrow label="Corrupt" active={Boolean(result || loading)} />
+        </div>
         <ImagePanel
+          fluid
+          label="Model input"
+          src={result?.input_image}
+          loading={loading}
+          badge={category && <PanelBadge className={`${category.soft} ${category.text} ${category.softBorder}`}>{typeLabel}</PanelBadge>}
+          emptyIcon="blur_on"
+          emptyTitle="No input yet"
+          emptyText="Corrupted image appears here"
+        />
+        <div className="hidden lg:block">
+          <FlowArrow label={flowLabel} active={Boolean(result || loading)} />
+        </div>
+        <ImagePanel
+          fluid
           label={outputLabel}
           src={result?.output_image}
           loading={loading}
@@ -68,7 +93,7 @@ export default function RestoreResultCard({ workspace, outputLabel, filename, fl
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-page px-3 py-2 font-mono text-mono-sm text-muted">
         <span className="flex items-center gap-1 font-medium text-ink">
           <Icon name="view_in_ar" size={15} className="text-primary" />
-          128 × 128 shown at 2.25× (288 px)
+          Each panel shows a 128 × 128 image, enlarged
         </span>
         <span>•</span>
         <span>Interpolation: nearest neighbour</span>
