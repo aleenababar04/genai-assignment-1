@@ -2222,6 +2222,22 @@ objective stored in each checkpoint (0.3030 against 0.3073), not on the test
 set; the test evaluation was then run locally (SSIM 0.473 against 0.472) and
 the ONNX check of the new generator was read from the Kaggle output
 ($1.4\times10^{-6}$). The earlier model and its test table are kept.
+\item \textbf{2026-10-04, Claude Code (Claude Opus).}
+\emph{Used for:} at the student's request, showing the original image (before
+corruption) next to the model input and the restored output in the three
+restoration workspaces.
+\emph{Verification:} the backend tests were extended (the original equals the
+uncorrupted input; 73 passed) and the rebuilt application was driven in a
+headless browser on all three pages; two layout problems were found and fixed.
+
+\item \textbf{2026-10-04, Claude Code (Claude Opus).}
+\emph{Used for:} exporting all W\&B runs to \file{report/results/wandb_runs.csv}
+and testing the evaluator's path.
+\emph{Verification:} the repository was cloned into an empty folder, the
+download script fetched the seven files of the \texttt{models-v1} release
+(each identical to the local model by SHA-256), and \texttt{docker compose up
+--build} from that clone served the application with all seven models loaded;
+the four operations returned results.
 \end{enumerate}
 
 \end{document}
