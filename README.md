@@ -158,13 +158,13 @@ All training runs, Optuna trials, evaluation results and checkpoints are logged 
 
 ## Report and demo video
 
-- Report: TODO: path to the PDF (LaTeX source in `report/`).
-- Demo video: TODO: YouTube link.
+- Report: IEEE-format LaTeX source in `report/main.tex` (compile with pdfLaTeX and BibTeX; `python scripts/make_overleaf_zip.py` packs it for Overleaf). The compiled PDF is submitted on Google Classroom.
+- Demo video: https://youtu.be/U_9R4x1TlWg
 
 ## Acknowledgements and AI use
 
 - Oxford-IIIT Pet Dataset: O. M. Parkhi, A. Vedaldi, A. Zisserman and C. V. Jawahar, "Cats and Dogs", CVPR 2012 (CC BY-SA 4.0).
-- FS2K: D.-P. Fan et al., FS2K dataset, https://github.com/DengPingFan/FS2K. TODO: full citation.
+- FS2K: D.-P. Fan, Z. Huang, P. Zheng, H. Liu, X. Qin and L. Van Gool, "Facial-Sketch Synthesis: A New Challenge", Machine Intelligence Research 19(4), 2022, https://github.com/DengPingFan/FS2K.
 - The generator and discriminator follow pix2pix: P. Isola, J.-Y. Zhu, T. Zhou and A. A. Efros, "Image-to-Image Translation with Conditional Adversarial Networks", CVPR 2017.
 
 AI tools were used during this assignment. Every use is recorded in [docs/ai_use_log.md](docs/ai_use_log.md), which is also the AI-use appendix of the report. Design decisions and the evidence behind them are in [docs/decision_log.md](docs/decision_log.md).
