@@ -135,7 +135,7 @@ SECTIONS = [
         ("task4_cgan_curves.png", "Training curves",
          "Discriminator real and fake loss, generator adversarial loss, generator L1, validation SSIM and objective per epoch.",
          "Healthy GAN training: the losses oscillate but do not blow up.",
-         "The discriminator slowly gains the upper hand (normal), nothing collapsed, and validation SSIM was still creeping up at epoch 100."),
+         "The discriminator slowly gains the upper hand (normal) and nothing collapsed. Validation SSIM is flat after about 100 of the 200 epochs: the GAN had converged."),
         ("task4_cgan_optuna.png", "Optuna search for Task 4", "Trial scores and importances.", "Lower is better.",
          "8 trials, 3 completed, 5 pruned; the balance between the two learning rates and dropout matter most."),
     ]),

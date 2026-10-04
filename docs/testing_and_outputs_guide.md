@@ -161,7 +161,7 @@ Every restoration table has the same columns: `condition`, `severity`, `count` (
 | `task3_moe_test_metrics.csv` | Task 3 restoration | Clean 62 dB (almost untouched); corrupted 23.71 dB |
 | `task3_moe_mean_weights.csv` | **The gate's average weights** per true corruption and severity | Each row's biggest number is the expert used |
 | `task3_moe_expert_health.csv` | Is any expert unused or dominating? | All `inactive` and `dominates_unrelated` are False |
-| `task4_cgan_test_metrics.csv` | Sketch quality overall and per style | SSIM 0.472; Style 2 lowest |
+| `task4_cgan_test_metrics.csv` | Sketch quality overall and per style (200-epoch model; `task4_cgan_100ep_test_metrics.csv` is the earlier 100-epoch model) | SSIM 0.473; Style 2 lowest |
 | `*_onnx_check.json` | PyTorch output vs ONNX output on real images | `max_abs_diff` about 1e-6; the limit is 1e-4 |
 
 ### 5.3 The figures (`report/figures/`)
@@ -186,7 +186,7 @@ The gallery explains all of them. The essentials:
 | `task3_moe_failures.png` | Worst cases with the four weights in the labels | Tells routing errors from expert errors |
 | `task4_cgan_style_swap.png` | The same face in Styles 1, 2, 3 | **Proof that the style condition works** |
 | `task4_cgan_examples.png`, `task4_cgan_failures.png` | Photo, true sketch, generated sketch | Typical results, and the four worst (all Style 2, long hair) |
-| `task4_cgan_curves.png` | Discriminator losses, generator losses, validation score | A healthy GAN: nothing collapsed, still improving |
+| `task4_cgan_curves.png` | Discriminator losses, generator losses, validation score | A healthy GAN: nothing collapsed; validation flat after about 100 epochs |
 
 ### 5.4 The Optuna studies (`optuna_studies/`)
 

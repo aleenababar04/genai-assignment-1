@@ -262,7 +262,7 @@ p{margin:6px 0} nav a{margin-right:12px}
 <p class="file">report/figures/task4_cgan_curves.png</p>
 <p><span class="label">What it shows:</span> Discriminator real and fake loss, generator adversarial loss, generator L1, validation SSIM and objective per epoch.</p>
 <p><span class="label">How to read it:</span> Healthy GAN training: the losses oscillate but do not blow up.</p>
-<p><span class="label">What it means:</span> The discriminator slowly gains the upper hand (normal), nothing collapsed, and validation SSIM was still creeping up at epoch 100.</p>
+<p><span class="label">What it means:</span> The discriminator slowly gains the upper hand (normal) and nothing collapsed. Validation SSIM is flat after about 100 of the 200 epochs: the GAN had converged.</p>
 </div>
 <div class="card"><h3>Optuna search for Task 4</h3>
 <img src="figures/task4_cgan_optuna.png" alt="Optuna search for Task 4">

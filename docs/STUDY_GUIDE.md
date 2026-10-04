@@ -444,7 +444,7 @@ Learn to turn a face photo into a sketch in a chosen style (Style 1, 2 or 3), us
 - Generator: `BCE(generated pair -> 1)  +  lambda_L1 * L1(true sketch, generated sketch)`.
 - Each step: update the discriminator on a real and a detached fake pair, then the generator.
 - **Logged separately every epoch** (as required): discriminator real loss, discriminator fake loss, generator adversarial loss, generator L1 loss, and validation L1/PSNR/SSIM overall and per style. The **same validation photographs** are logged as sample grids every 10 epochs, so you can watch the generator improve.
-- Adam with betas (0.5, 0.999); final run **100 epochs** (the brief allows shorter Optuna trials followed by a full retraining).
+- Adam with betas (0.5, 0.999); final run **200 epochs** (about 70 minutes; the brief allows shorter Optuna trials followed by a full retraining). A first final run of 100 epochs was replaced by the 200-epoch run because its **validation** objective was lower (0.3030 vs 0.3073); on the test set the two are practically identical (SSIM 0.473 vs 0.472), i.e. the GAN had converged by about epoch 100.
 
 ### 7.4 The Optuna search
 
@@ -456,16 +456,16 @@ Both learning rates, batch size, base channels, dropout, style-embedding size an
 
 | Group | Pairs | L1 | PSNR | SSIM |
 |---|---|---|---|---|
-| All | 1,046 | 0.107 | 15.5 dB | 0.472 |
-| Style 1 | 619 | 0.080 | 17.3 dB | 0.521 |
-| Style 2 | 381 | 0.154 | 12.3 dB | 0.377 |
-| Style 3 | 46 | 0.072 | 18.0 dB | 0.603 |
+| All | 1,046 | 0.108 | 15.4 dB | 0.473 |
+| Style 1 | 619 | 0.080 | 17.1 dB | 0.519 |
+| Style 2 | 381 | 0.156 | 12.2 dB | 0.381 |
+| Style 3 | 46 | 0.069 | 18.2 dB | 0.608 |
 
 **How to explain it:** Style 2 is much harder to score because it is a dense, high-contrast drawing with many individual hair strokes. A plausible stroke pattern in the "wrong" place is penalised pixel by pixel. Style 3's number rests on only 46 test images. Pixel metrics understate the visual quality of dense styles.
 
 - `task4_cgan_style_swap.png`: the same photo in all three styles: Style 1 light outline, Style 2 heavy dark shading, Style 3 soft toned sketch; identity and pose preserved. **This is the figure that proves the conditioning works.**
-- `task4_cgan_failures.png`: the four worst test pairs are all Style 2 portraits of smiling people with long, voluminous hair (SSIM 0.18 to 0.20): recognisable and in the right style, but strokes placed differently from the artist's.
-- Training curves (`task4_cgan_curves.png`): the discriminator's two losses fall together and the generator's adversarial loss rises slowly, so the discriminator gradually gains the upper hand, which is normal; nothing collapsed or diverged; validation SSIM rose from 0.41 to 0.48 and was still creeping upward at epoch 100, so more epochs would probably help (we halved the schedule for time).
+- `task4_cgan_failures.png`: the four worst test pairs are all Style 2 portraits of people with long, voluminous hair (SSIM 0.18 to 0.19): recognisable and in the right style, but strokes placed differently from the artist's.
+- Training curves (`task4_cgan_curves.png`): the discriminator's two losses fall together and the generator's adversarial loss rises slowly, so the discriminator gradually gains the upper hand, which is normal; nothing collapsed or diverged; validation SSIM rose from 0.41 to about 0.48 in the first 100 epochs and then stayed flat while the training L1 kept falling: the generator had converged, which is why 200 epochs gave the same test result as 100.
 
 ### 7.6 Where it lives
 
@@ -548,7 +548,7 @@ The brief says: "The complete application must run locally through Docker Compos
 | Task 2 routing | oracle = predicted = 23.63 dB / 0.705 (corrupted) |
 | Task 3 | 23.71 dB / 0.750 (corrupted); clean 62.4 dB / 0.999; tau 0.85; all 8 trials completed; no collapse |
 | Task 3 gate | high-severity weights 0.95 to 1.00 on the right expert; low blur 0.42 identity / 0.58 blur |
-| Task 4 | SSIM 0.472 overall (Style 1: 0.521, Style 2: 0.377, Style 3: 0.603); lambda_L1 = 121 |
+| Task 4 | SSIM 0.473 overall (Style 1: 0.519, Style 2: 0.381, Style 3: 0.608); lambda_L1 = 121; 200 epochs (100 epochs gave 0.472) |
 | Optuna studies | 5: 30, 12, 10, 8, 8 trials |
 | Training time | Task 1 final: 43 minutes (80 epochs); trials 2 to 6 minutes each |
 | ONNX agreement | largest PyTorch-ONNX difference about 1e-6 or less (limit 1e-4) |
@@ -562,7 +562,7 @@ The brief says: "The complete application must run locally through Docker Compos
 
 Say these yourself; they show understanding.
 
-1. **Reduced Optuna budgets and shorter final trainings** (Tasks 2 to 4) to meet the deadline; the searches are coarse and the GAN was still improving at epoch 100.
+1. **Reduced Optuna budgets and shorter final trainings** (Tasks 2 to 4) to meet the deadline; the searches are coarse. (The GAN was retrained for the full 200 epochs; it had already converged at about 100.)
 2. **Task 1's ceiling:** the bottleneck limits detail, so clean and mildly corrupted images are made slightly worse. Black backgrounds are mistaken for occlusions.
 3. **Specialists were not better than the universal model** on corrupted images, and the comparison is not perfectly controlled (different search sizes, epochs and bottleneck widths).
 4. **The fixed validation objective** (`0.8 * L1 + 0.2 * (1 - SSIM)`) slightly favours trials whose alpha is near 0.8.
@@ -671,7 +671,7 @@ Short model answers. Use your own words; the point is to understand the reasonin
 
 **39. What did the AI tools do, and what did you verify?** Be honest and specific. AI assistants wrote much of the code, drafted documents and helped debug; every use is logged in `docs/ai_use_log.md`. You ran the training, designed the interface in Stitch, ran and checked results, and you must be able to explain the code. Say which files you have read and understood (see Part 16). The brief allows AI use but requires that you verify and understand everything.
 
-**40. What would you improve with more time?** Longer Optuna searches and trainings (especially the GAN), a fairer specialist-versus-universal comparison, a wider bottleneck or a perceptual loss to reduce smoothing, better handling of black backgrounds (for example training with images that have black borders), and public hosting.
+**40. What would you improve with more time?** Longer Optuna searches, a fairer specialist-versus-universal comparison, a wider bottleneck or a perceptual loss to reduce smoothing, better handling of black backgrounds (for example training with images that have black borders), and public hosting.
 
 ---
 

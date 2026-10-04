@@ -1434,7 +1434,7 @@ range.
 \subsection{Training procedure and logging}
 Each iteration first updates $D$ on a real and a generated (detached) pair,
 then updates $G$. Both use Adam with $\beta=(0.5,0.999)$ and constant
-learning rates; the final configuration is trained for 100 epochs with the
+learning rates; the final configuration is trained for 200 epochs with the
 paired augmentation of Section~\ref{sec:data}. The discriminator real loss,
 discriminator fake loss, generator adversarial loss and generator L1 loss
 are logged separately every epoch, together with the validation L1, PSNR and
@@ -1462,8 +1462,11 @@ epochs are run (TPE, median pruner with three start-up trials and six
 warm-up epochs; reduced from twelve trials of 25 epochs for time); trial~0
 is fixed to the pix2pix-style defaults (learning rates
 $2\times10^{-4}$, batch size 4, $c=64$, dropout 0.5, $d_s=16$,
-$\lambda_{L1}=100$). The best configuration is then retrained for 100
-epochs (halved from the planned 200 for time). Batch size 1 was removed from
+$\lambda_{L1}=100$). The best configuration was first retrained for 100
+epochs to save time, and later, when time allowed, for the planned 200
+epochs; the 200-epoch model was kept because its validation objective was
+lower (0.3030 against 0.3073, best epochs 198 and 94). The test set was not
+used for this choice. Batch size 1 was removed from
 the search space because it made trials too slow. Table~\ref{tab:task4_space} gives the search space.
 
 \begin{table}[t]
@@ -1504,16 +1507,20 @@ its ONNX file is 168.5\,MB.
 \label{fig:task4_curves}
 \end{figure}
 
-Fig.~\ref{fig:task4_curves} shows the four losses logged separately. The
-discriminator's real and fake losses fall together from about 0.35 to 0.25,
-and the generator's adversarial loss rises from about 2.7 to 3.9: the
-discriminator slowly gains the upper hand, as is typical for pix2pix-style
-training, but neither loss collapses to zero and the L1 term keeps the
-generator anchored, so training did not diverge. The generator's L1 loss
-and the validation objective improve steadily, and validation SSIM rises
-from 0.41 to 0.48, still creeping upwards at epoch 100, so the halved
-schedule probably cost some quality. The fixed validation photographs logged
-to W\&B every 10 epochs show the sketches sharpening over time.
+Fig.~\ref{fig:task4_curves} shows the four losses of the 200-epoch run,
+logged separately. The discriminator's real and fake losses fall together
+from about 0.35 to about 0.22, and the generator's adversarial loss rises
+from about 2.7 to 4.5: the discriminator slowly gains the upper hand, as is
+typical for pix2pix-style training, but neither loss collapses to zero and
+the L1 term keeps the generator anchored, so training did not diverge. The
+validation SSIM rises from 0.41 to about 0.48 within the first 100 epochs
+and then stays flat, while the generator's training L1 keeps decreasing:
+after about 100 epochs the generator fits the training pairs more closely
+without becoming better on unseen ones. The test results confirm this: the
+100-epoch model scored SSIM 0.472 and the 200-epoch model 0.473 (PSNR 15.50
+and 15.37\,dB), so the longer schedule changed practically nothing. The
+fixed validation photographs logged to W\&B every 10 epochs show the
+sketches sharpening early in training.
 
 \begin{table}[t]
 \centering
@@ -1524,10 +1531,10 @@ to W\&B every 10 epochs show the sketches sharpening over time.
 \toprule
 Group & Count & L1 & PSNR & SSIM \\
 \midrule
-All     & 1046 & 0.1068 & 15.50 & 0.472 \\
-Style 1 & 619 & 0.0802 & 17.25 & 0.521 \\
-Style 2 & 381 & 0.1542 & 12.34 & 0.377 \\
-Style 3 & 46 & 0.0715 & 17.96 & 0.603 \\
+All     & 1046 & 0.1075 & 15.37 & 0.473 \\
+Style 1 & 619 & 0.0803 & 17.12 & 0.519 \\
+Style 2 & 381 & 0.1562 & 12.17 & 0.381 \\
+Style 3 & 46 & 0.0691 & 18.23 & 0.608 \\
 \bottomrule
 \end{tabular}
 \\[3pt]
@@ -1549,8 +1556,8 @@ Style 3 & 46 & 0.0715 & 17.96 & 0.603 \\
 \end{figure}
 
 On the official test split (Table~\ref{tab:task4_results}) the generated
-sketches reach SSIM 0.472 overall, with a clear split between styles: Style~2
-is much harder (SSIM 0.377) than Styles~1 and 3 (0.521 and 0.603). Style~2
+sketches reach SSIM 0.473 overall, with a clear split between styles: Style~2
+is much harder (SSIM 0.381) than Styles~1 and 3 (0.519 and 0.608). Style~2
 sketches are dense, high-contrast drawings with many individual hair
 strokes, whose exact positions cannot be predicted from the photograph, so
 any plausible stroke pattern is penalised pixel by pixel; Styles~1 and 3 are
@@ -1568,11 +1575,10 @@ sketch, while identity, pose and hairstyle are preserved across all three.
 \label{fig:task4_failures}
 \end{figure}
 All four lowest-SSIM test pairs (Fig.~\ref{fig:task4_failures}, SSIM
-0.18--0.20) are Style~2 portraits of smiling people with long, voluminous
-hair. The generated sketches are recognisable and in the right style, but
-the artist's individual hair strokes and the exaggerated smile lines are
-placed differently from the ground truth, and the generator's strokes are
-softer. These are therefore failures of the pixel-wise metric as much as of
+0.18--0.19) are Style~2 portraits of people with long, voluminous hair. The
+generated sketches are recognisable and in the right style, but the
+artist's individual hair strokes and facial lines are placed differently
+from the ground truth, and the generator's strokes are softer. These are therefore failures of the pixel-wise metric as much as of
 the model: SSIM cannot reward a plausible but different stroke pattern.
 
 \subsection{Discussion}
@@ -1599,7 +1605,9 @@ The wall-clock times below are taken from the W\&B run records; each epoch
 includes its validation pass. The final trainings took 43\,min for the
 Task~1 autoencoder (80 epochs; 44\,min for the skip variant), 2.8\,min for the
 classifier (25 epochs), about 19.5\,min for each specialist (40 epochs),
-22\,min for the mixture (17 epochs) and 34\,min for the GAN (100 epochs). The
+22\,min for the mixture (17 epochs) and 34\,min for the GAN (100 epochs;
+the 200-epoch retraining run took 70\,min in total, including data
+preparation). The
 Optuna searches took 114, 7, 33, 50 and 21\,min for Tasks~1, 2 (classifier),
 2 (specialists), 3 and 4 respectively. A Task~1 epoch on the laptop CPU
 would take far longer, which is why all training ran on the GPU.
@@ -1879,9 +1887,11 @@ trained configurations.}
   short run may differ from their ranking after full training, and the
   searches are coarse. The budgets of Tasks 2--4 were reduced from the
   original plan to meet the deadline.
-  \item \emph{Shortened final training.} The GAN was trained for 100 instead
-  of the planned 200 epochs and its validation SSIM was still rising, so its
-  quality is probably below what a full schedule would reach.
+  \item \emph{GAN plateau.} Doubling the GAN's final training from 100 to 200
+  epochs improved its validation objective only slightly and left its test
+  SSIM unchanged (0.472 and 0.473), so further gains would need more data,
+  a different loss (for example a perceptual term) or a larger resolution,
+  not longer training.
   \item \emph{Fixed validation weighting.} The objective $J$ uses the
   weights 0.8/0.2, which may slightly favour trials whose training $\alpha$
   or $\lambda_1$ is close to 0.8.
@@ -1949,8 +1959,9 @@ on mild degradations while keeping clean images almost intact, at three times
 the cost. The conditional GAN uses its learned style embedding visibly (the
 same face is drawn in three distinct styles), with the lowest scores on the
 dense Style~2 where the pixel metrics penalise plausible but different
-strokes. With more time we would run longer searches and a full-length GAN
-schedule, compare the specialists and the universal model under identical
+strokes; doubling its training from 100 to 200 epochs showed that it had
+already converged. With more time we would run longer searches, compare the
+specialists and the universal model under identical
 budgets, train with natural black borders to remove the black-region
 ambiguity, and add a perceptual loss to reduce the smoothing.
 
@@ -2196,6 +2207,15 @@ the assignment PDF and could not verify run times or the Kaggle GPU. The
 scripts were run and their output compared with the tables in this paper.
 % TODO: Pending item from docs/ai_use_log.md.
 \TODO{Pending: own reading of the guides.}
+\item \textbf{2026-10-04, Claude Code (Claude Opus).}
+\emph{Used for:} the decision to retrain the Task~4 GAN for 200 epochs, the
+retraining notebook, the comparison of the two models and the update of this
+paper.
+\emph{Verification:} the two models were compared on the validation
+objective stored in each checkpoint (0.3030 against 0.3073), not on the test
+set; the test evaluation was then run locally (SSIM 0.473 against 0.472) and
+the ONNX check of the new generator was read from the Kaggle output
+($1.4\times10^{-6}$). The earlier model and its test table are kept.
 \end{enumerate}
 
 \end{document}

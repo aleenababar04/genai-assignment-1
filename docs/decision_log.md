@@ -357,7 +357,7 @@ Copy this block for each new decision.
   - Retrain 200 epochs with the same settings: no new search, so the Optuna study and the other results stay valid.
   - Rerun the searches of Tasks 2 to 4 with the original budgets: would change many numbers and the Task 3 starting point; too much rework for the time left.
 - **Sources consulted:** W&B run durations (queried with the W&B API on 2026-10-04): the 100-epoch final run of Task 4 took 33.7 minutes, so 200 epochs should take about 70 minutes.
-- **Experiment and numbers:** TODO after the run: validation objective and test metrics of the 200-epoch model against the 100-epoch model.
+- **Experiment and numbers:** Kaggle run of 4,182 s (about 70 minutes including data preparation). Best epoch 198 with validation objective 0.3030 and validation SSIM 0.492, against best epoch 94, 0.3073 and 0.487 for the 100-epoch model, so the 200-epoch model was adopted. Test set afterwards (not used for the choice): SSIM 0.473 against 0.472, PSNR 15.37 against 15.50 dB; per style 0.519 / 0.381 / 0.608 against 0.521 / 0.377 / 0.603. The validation SSIM curve is flat after about epoch 100 while the training L1 keeps falling: the GAN had converged, so the longer schedule changed practically nothing. The 100-epoch model is kept as `checkpoints/task4_cgan_100ep.pt` and its test table as `report/results/task4_cgan_100ep_test_metrics.csv`.
 - **Choice and why:** Retrain, because it is cheap and restores the planned schedule; the first model is kept as a fallback and the comparison is reported.
 - **Report section it feeds:** Task 4 training procedure; limitations.
 
