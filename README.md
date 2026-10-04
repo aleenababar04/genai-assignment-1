@@ -1,6 +1,6 @@
 # Generative AI: Assignment 1
 
-TODO: student name, roll number, course and semester.
+Aleena Babar (23I-0628), Department of Computer Science, FAST-NUCES Islamabad. Course: Generative AI.
 
 Four generative image systems, trained in PyTorch, exported to ONNX and served through one web application:
 
@@ -142,7 +142,7 @@ cd frontend && npm install && npm run dev      # then open http://localhost:5173
 
 ## Experiment tracking
 
-All training runs, Optuna trials, evaluation results and checkpoints are logged to the Weights & Biases project `genai-a1`: TODO: project link. The Optuna studies are in `optuna_studies/` (`task1_udae.db`, `task2_classifier.db`, `task2_specialists.db`, `task3_moe.db`, `task4_cgan.db`) and can be summarised with `python scripts/show_results.py` (or opened interactively after `pip install optuna-dashboard`: `optuna-dashboard sqlite:///optuna_studies/<file>.db`).
+All training runs, Optuna trials, evaluation results and checkpoints are logged to the Weights & Biases project `genai-a1`: https://wandb.ai/aleenababar04-fast-nuces/genai-a1 (a team workspace; an export of all runs is in `report/results/wandb_runs.csv`, made with `python scripts/export_wandb_runs.py`). The Optuna studies are in `optuna_studies/` (`task1_udae.db`, `task2_classifier.db`, `task2_specialists.db`, `task3_moe.db`, `task4_cgan.db`) and can be summarised with `python scripts/show_results.py` (or opened interactively after `pip install optuna-dashboard`: `optuna-dashboard sqlite:///optuna_studies/<file>.db`).
 
 ## Documentation
 

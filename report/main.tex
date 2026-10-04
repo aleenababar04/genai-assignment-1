@@ -54,9 +54,10 @@
 \title{Restoring Corrupted Images and Generating Facial Sketches:\\
 Autoencoders, Hard and Soft Expert Routing, and a Style-Conditioned GAN}
 
-\author{\IEEEauthorblockN{TODO: Student Name}
-\IEEEauthorblockA{TODO: Roll number, Department, University\\
-TODO: email}}
+\author{\IEEEauthorblockN{Aleena Babar (23I-0628)}
+\IEEEauthorblockA{Department of Computer Science\\
+FAST National University of Computer and Emerging Sciences, Islamabad, Pakistan\\
+i230628@isb.nu.edu.pk}}
 
 \maketitle
 
@@ -1611,8 +1612,8 @@ preparation). The
 Optuna searches took 114, 7, 33, 50 and 21\,min for Tasks~1, 2 (classifier),
 2 (specialists), 3 and 4 respectively. A Task~1 epoch on the laptop CPU
 would take far longer, which is why all training ran on the GPU.
-% TODO(results): Kaggle GPU model; update the GAN time if the 200-epoch retraining is adopted.
-\TODO{State the Kaggle GPU model.}
+Kaggle's ``GPU T4 x2'' accelerator was used (two NVIDIA Tesla T4 GPUs);
+the training scripts use one of the two.
 
 \subsection{Experiment tracking and Optuna}
 Every Optuna trial, final training run and evaluation is a W\&B run in the
@@ -1625,8 +1626,11 @@ are stored in SQLite (\file{optuna_studies/<study>.db}), so an interrupted
 search can be resumed and the studies can be inspected later; the best
 parameters are written to \file{configs/<task>_best.yaml}, which the final
 training reads. Table~\ref{tab:optuna_summary} summarises the studies.
-% TODO: add the public W&B project link.
-\TODO{Add the W\&B project link.}
+The project is \url{https://wandb.ai/aleenababar04-fast-nuces/genai-a1}. It belongs to a W\&B team
+workspace whose visibility could not be set to public, so an export of all
+83 runs (group, name, duration, hyperparameters and best validation results)
+is included in the repository as \file{report/results/wandb_runs.csv}, and the
+demonstration video shows the dashboard.
 
 \begin{table}[t]
 \centering
@@ -1871,9 +1875,9 @@ tier provides 1\,GB of storage and 1\,GB of download bandwidth per month,
 and the Task~4 generator alone is about 168\,MB at 64 base channels, so a
 few clones could exhaust the quota; release assets have no comparable
 bandwidth quota.
-% TODO: create the models-v1 release once the trained models exist, and update the generator size to the trained configuration.
-\TODO{Create the \texttt{models-v1} release; update the file sizes to the
-trained configurations.}
+The release was checked by cloning the repository into an empty folder,
+running the download script and comparing the downloaded files with the
+originals byte for byte.
 
 % =====================================================================
 \section{Limitations}
@@ -2195,7 +2199,7 @@ descriptions of them into the text. The Task~4 test evaluation was rerun
 locally after the Kaggle run failed on a missing cache file. A statement about
 the Kaggle GPU model that the tool had written without evidence was removed.
 % TODO: Pending item from docs/ai_use_log.md.
-\TODO{Pending: own check of each interpretive sentence against the figures and tables; Kaggle GPU model and run times.}
+\TODO{Pending: own check of each interpretive sentence against the figures and tables.}
 
 \item \textbf{2026-10-03, Claude Code (Claude Opus), with one subagent.}
 \emph{Used for:} writing the student's study documents and helper scripts
